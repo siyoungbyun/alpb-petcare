@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: buddy-server
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:54320/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+
+server:
+  servlet:
+    context-path: /api
