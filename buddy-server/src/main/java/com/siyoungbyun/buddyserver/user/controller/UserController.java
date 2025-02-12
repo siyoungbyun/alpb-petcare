@@ -1,12 +1,17 @@
 package com.siyoungbyun.buddyserver.user.controller;
 
-import com.siyoungbyun.buddyserver.common.dto.ResponseDto;
+import com.siyoungbyun.buddyserver.global.response.BaseResponse;
+import com.siyoungbyun.buddyserver.global.response.ErrorResponse;
+import com.siyoungbyun.buddyserver.global.response.SuccessWithDataResponse;
 import com.siyoungbyun.buddyserver.user.domain.User;
-import com.siyoungbyun.buddyserver.user.dto.ResetPasswordRequestDto;
+import com.siyoungbyun.buddyserver.user.response.UserResponse;
 import com.siyoungbyun.buddyserver.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("v1/users")
@@ -15,21 +20,15 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // TODO: move to /me
-    @PutMapping("/{id}/reset-password")
-    public ResponseEntity<ResponseDto> resetPassword(@PathVariable Long id,
-                                                     @RequestBody ResetPasswordRequestDto resetPasswordRequestDto) {
-        boolean success = userService.resetPassword(id, resetPasswordRequestDto.getNewPassword());
-        if (success) {
-            return ResponseEntity.ok(ResponseDto.of("success", "비밀번호 변경 성공"));
+    public ResponseEntity<BaseResponse> getUserById(@PathVariable Long id) {
+        Optional<User> userOpt = userService.getUserById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new SuccessWithDataResponse<>("유저 조회 성공", UserResponse.fromEntity(user)));
         } else {
-            return ResponseEntity.badRequest().body(ResponseDto.of("error", "비밀번호 변경 실패"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("존재하지 않는 유저입니다."));
         }
     }
 }

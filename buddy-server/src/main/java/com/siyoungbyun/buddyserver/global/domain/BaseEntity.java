@@ -1,4 +1,4 @@
-package com.siyoungbyun.buddyserver.common.domain;
+package com.siyoungbyun.buddyserver.global.domain;
 
 import jakarta.persistence.*;
 import lombok.*;

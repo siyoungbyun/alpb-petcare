@@ -1,6 +1,6 @@
 package com.siyoungbyun.buddyserver.user.domain;
 
-import com.siyoungbyun.buddyserver.common.domain.BaseEntity;
+import com.siyoungbyun.buddyserver.global.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,14 +12,20 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
+
     @Column(nullable = false, unique = true)
     private String email;
+
     @Setter
     @Column(nullable = false)
     private String password;
+
+    @Setter
     @Column(nullable = false)
     private String name;
 
