@@ -1,5 +1,6 @@
 package com.siyoungbyun.buddyserver.user.service;
 
+import com.siyoungbyun.buddyserver.global.exception.UserNotFoundException;
 import com.siyoungbyun.buddyserver.user.domain.User;
 import com.siyoungbyun.buddyserver.user.repository.UserRepository;
 import com.siyoungbyun.buddyserver.user.request.LoginRequest;
@@ -8,6 +9,7 @@ import com.siyoungbyun.buddyserver.user.request.UpdateUserRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -28,13 +30,13 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    private boolean validateUser(String email, String password) {
-        User user = userRepository.findByEmail(email);
-        return user.getPassword().equals(password);
-    }
+    public User getUserById(Long userId) {
 
-    public Optional<User> getUserById(Long userId) {
-        return userRepository.findById(userId);
+        Optional<User> optUser = userRepository.findById(userId);
+        if (optUser.isPresent()) {
+            return optUser.get();
+        }
+        throw new UserNotFoundException("유저를 찾을 수 없습니다.");
     }
 
     public String loginUser(LoginRequest loginRequest, HttpSession session) {
@@ -58,6 +60,7 @@ public class UserService {
         return false;
     }
 
+    @Transactional
     public User updateUser(Long userId, UpdateUserRequest updateUserRequest) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
@@ -72,6 +75,7 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public boolean deleteUser(Long userId) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
