@@ -21,14 +21,9 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BaseResponse> getUserById(@PathVariable Long id) {
-        Optional<User> userOpt = userService.getUserById(id);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new SuccessWithDataResponse<>("유저 조회 성공", UserResponse.fromEntity(user)));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("존재하지 않는 유저입니다."));
-        }
+        User user = userService.getUserById(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new SuccessWithDataResponse<>("유저 조회 성공", UserResponse.fromEntity(user)));
     }
 }

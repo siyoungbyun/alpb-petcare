@@ -24,33 +24,15 @@ public class MeController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<BaseResponse> getMe(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("권한이 없습니다."));
-        }
-        Long id = (Long) session.getAttribute("user");
-        Optional<User> userOpt = userService.getUserById(id);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new SuccessWithDataResponse<>("내 정보 조회 성공", UserResponse.fromEntity(user)));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("존재하지 않는 유저입니다."));
-        }
+    public ResponseEntity<BaseResponse> getMe(@RequestAttribute("userId") Long userId) {
+        User user = userService.getUserById(userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new SuccessWithDataResponse<>("내 정보 조회 성공", UserResponse.fromEntity(user)));
     }
 
     @PatchMapping
-    public ResponseEntity<BaseResponse> updateMe(HttpServletRequest request, @RequestBody UpdateUserRequest updateUserRequest) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("권한이 없습니다."));
-        }
-        Long id = (Long) session.getAttribute("user");
-        User user = userService.updateUser(id, updateUserRequest);
+    public ResponseEntity<BaseResponse> updateMe(@RequestAttribute("userId") Long userId, @RequestBody UpdateUserRequest updateUserRequest) {
+        User user = userService.updateUser(userId, updateUserRequest);
         if (user != null) {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new SuccessWithDataResponse<>("유저 업데이트 성공", UserResponse.fromEntity(user)));
@@ -61,14 +43,8 @@ public class MeController {
     }
 
     @DeleteMapping
-    public ResponseEntity<BaseResponse> deleteMe(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("권한이 없습니다."));
-        }
-        Long id = (Long) session.getAttribute("user");
-        boolean success = userService.deleteUser(id);
+    public ResponseEntity<BaseResponse> deleteMe(@RequestAttribute("userId") Long userId) {
+        boolean success = userService.deleteUser(userId);
         if (success) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } else {
