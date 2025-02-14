@@ -48,6 +48,18 @@ const routes = [
     name: 'Withdrawal',
     component: () => import('./views/Withdrawal.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/pet-service-registration',
+    name: 'PetServiceRegistration',
+    component: () => import('./views/PetServiceRegistration.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/pet-services',
+    name: 'PetServiceList',
+    component: () => import('./views/PetServiceList.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

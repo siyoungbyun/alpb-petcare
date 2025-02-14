@@ -20,6 +20,25 @@ export const api = {
     return data
   },
 
+  async registerPetService(data) {
+    const response = await fetch(`${API_BASE_URL}/pet-services`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+      credentials: 'include'
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || '서비스 등록에 실패했습니다.');
+    }
+
+    return responseData;
+  },
+
   async checkAuth() {
     const response = await fetch(`${API_BASE_URL}/me`, {
       credentials: 'include'

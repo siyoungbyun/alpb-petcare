@@ -15,13 +15,31 @@
             >
               내 반려동물 관리
             </router-link>
-            <router-link
-              to="/service-booking"
-              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors text-base"
-              :class="{ 'bg-gray-100': $route.path === '/service-booking' }"
-            >
-              펫시터 서비스 예약
-            </router-link>
+
+            <!-- Replace the two separate links with NavDropdown -->
+            <NavDropdown title="펫시터 서비스">
+              <router-link
+                to="/pet-services"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                :class="{ 'bg-gray-100': $route.path === '/pet-services' }"
+              >
+                서비스 목록
+              </router-link>
+              <router-link
+                to="/pet-service-registration"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                :class="{ 'bg-gray-100': $route.path === '/pet-service-registration' }"
+              >
+                서비스 등록
+              </router-link>
+              <router-link
+                to="/service-booking"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                :class="{ 'bg-gray-100': $route.path === '/service-booking' }"
+              >
+                서비스 예약
+              </router-link>
+            </NavDropdown>
           </div>
         </div>
 
@@ -95,15 +113,17 @@
 
 <script>
 import BaseButton from './BaseButton.vue'
+import NavDropdown from './NavDropdown.vue'
 import { api } from '../services/api'
 import { useAuth } from '../store/auth'
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
 export default {
   name: 'NavBar',
   components: {
-    BaseButton
+    BaseButton,
+    NavDropdown
   },
   setup() {
     const router = useRouter()
