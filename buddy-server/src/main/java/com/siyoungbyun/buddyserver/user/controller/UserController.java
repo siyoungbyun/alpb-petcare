@@ -1,7 +1,6 @@
 package com.siyoungbyun.buddyserver.user.controller;
 
 import com.siyoungbyun.buddyserver.global.response.BaseResponse;
-import com.siyoungbyun.buddyserver.global.response.ErrorResponse;
 import com.siyoungbyun.buddyserver.global.response.SuccessWithDataResponse;
 import com.siyoungbyun.buddyserver.user.domain.User;
 import com.siyoungbyun.buddyserver.user.response.UserResponse;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 
 @RestController
 @RequestMapping("v1/users")

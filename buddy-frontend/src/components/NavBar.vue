@@ -15,13 +15,31 @@
             >
               내 반려동물 관리
             </router-link>
-            <router-link
-              to="/service-booking"
-              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors text-base"
-              :class="{ 'bg-gray-100': $route.path === '/service-booking' }"
-            >
-              펫시터 서비스 예약
-            </router-link>
+
+            <!-- Replace the two separate links with NavDropdown -->
+            <NavDropdown title="펫시터 서비스">
+              <router-link
+                to="/pet-services"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                :class="{ 'bg-gray-100': $route.path === '/pet-services' }"
+              >
+                서비스 목록
+              </router-link>
+              <router-link
+                to="/pet-service-registration"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                :class="{ 'bg-gray-100': $route.path === '/pet-service-registration' }"
+              >
+                서비스 등록
+              </router-link>
+              <router-link
+                to="/service-booking"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                :class="{ 'bg-gray-100': $route.path === '/service-booking' }"
+              >
+                서비스 예약
+              </router-link>
+            </NavDropdown>
           </div>
         </div>
 
@@ -52,9 +70,9 @@
               P
             </router-link>
             <!-- Menu Button with Dropdown Container -->
-            <div class="relative">
+            <div class="relative" ref="menuContainer">
               <button
-                @click="isMenuOpen = !isMenuOpen"
+                @click="toggleMenu"
                 class="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <svg
@@ -95,43 +113,45 @@
 
 <script>
 import BaseButton from './BaseButton.vue'
+import NavDropdown from './NavDropdown.vue'
 import { api } from '../services/api'
 import { useAuth } from '../store/auth'
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
 export default {
   name: 'NavBar',
   components: {
-    BaseButton
+    BaseButton,
+    NavDropdown
   },
   setup() {
     const router = useRouter()
     const isMenuOpen = ref(false)
+    const menuContainer = ref(null)
+
+    const handleClickOutside = (event) => {
+      if (menuContainer.value && !menuContainer.value.contains(event.target)) {
+        isMenuOpen.value = false
+      }
+    }
+
+    const toggleMenu = () => {
+      isMenuOpen.value = !isMenuOpen.value
+    }
 
     const handleLogout = async () => {
       try {
         await api.logout()
         useAuth.setLoggedIn(false)
         isMenuOpen.value = false
-        if (router.currentRoute.value.path !== '/') {
-          router.push('/')
-        }
+        router.push('/login')
       } catch (error) {
         console.error('Logout failed:', error)
       }
     }
 
-    const handleClickOutside = (event) => {
-      const dropdown = document.querySelector('.relative')
-      if (dropdown && !dropdown.contains(event.target)) {
-        isMenuOpen.value = false
-      }
-    }
-
-    onMounted(async () => {
-      const isAuthenticated = await api.checkAuth()
-      useAuth.setLoggedIn(isAuthenticated)
+    onMounted(() => {
       document.addEventListener('click', handleClickOutside)
     })
 
@@ -141,9 +161,10 @@ export default {
 
     return {
       isMenuOpen,
-      isLoggedIn: useAuth.isLoggedIn,
+      menuContainer,
+      toggleMenu,
       handleLogout,
-      handleClickOutside
+      isLoggedIn: useAuth.isLoggedIn
     }
   }
 }
