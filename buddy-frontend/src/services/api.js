@@ -118,5 +118,23 @@ export const api = {
     }
 
     return responseData
+  },
+
+  async getPetServices() {
+    const response = await fetch(`${API_BASE_URL}/pet-services`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include'
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || '서비스 목록 조회에 실패했습니다.');
+    }
+
+    return responseData.data;
   }
 }

@@ -70,9 +70,9 @@
               P
             </router-link>
             <!-- Menu Button with Dropdown Container -->
-            <div class="relative">
+            <div class="relative" ref="menuContainer">
               <button
-                @click="isMenuOpen = !isMenuOpen"
+                @click="toggleMenu"
                 class="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <svg
@@ -128,30 +128,30 @@ export default {
   setup() {
     const router = useRouter()
     const isMenuOpen = ref(false)
+    const menuContainer = ref(null)
+
+    const handleClickOutside = (event) => {
+      if (menuContainer.value && !menuContainer.value.contains(event.target)) {
+        isMenuOpen.value = false
+      }
+    }
+
+    const toggleMenu = () => {
+      isMenuOpen.value = !isMenuOpen.value
+    }
 
     const handleLogout = async () => {
       try {
         await api.logout()
         useAuth.setLoggedIn(false)
         isMenuOpen.value = false
-        if (router.currentRoute.value.path !== '/') {
-          router.push('/')
-        }
+        router.push('/login')
       } catch (error) {
         console.error('Logout failed:', error)
       }
     }
 
-    const handleClickOutside = (event) => {
-      const dropdown = document.querySelector('.relative')
-      if (dropdown && !dropdown.contains(event.target)) {
-        isMenuOpen.value = false
-      }
-    }
-
-    onMounted(async () => {
-      const isAuthenticated = await api.checkAuth()
-      useAuth.setLoggedIn(isAuthenticated)
+    onMounted(() => {
       document.addEventListener('click', handleClickOutside)
     })
 
@@ -161,9 +161,10 @@ export default {
 
     return {
       isMenuOpen,
-      isLoggedIn: useAuth.isLoggedIn,
+      menuContainer,
+      toggleMenu,
       handleLogout,
-      handleClickOutside
+      isLoggedIn: useAuth.isLoggedIn
     }
   }
 }
