@@ -5,7 +5,7 @@ import com.siyoungbyun.buddybackend.global.enums.ResponseStatus;
 import com.siyoungbyun.buddybackend.global.exception.AlreadyExistsException;
 import com.siyoungbyun.buddybackend.global.exception.DeactivatedUserException;
 import com.siyoungbyun.buddybackend.global.exception.DuplicateEmailException;
-import com.siyoungbyun.buddybackend.global.exception.UserNotFoundException;
+import com.siyoungbyun.buddybackend.global.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = UserNotFoundException.class)
-    public ResponseEntity<BaseResponse> handle(final UserNotFoundException exception) {
+    @ExceptionHandler(value = NotFoundException.class)
+    public ResponseEntity<BaseResponse> handle(final NotFoundException exception) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(new BaseResponse(ResponseStatus.ERROR, exception.getMessage()));

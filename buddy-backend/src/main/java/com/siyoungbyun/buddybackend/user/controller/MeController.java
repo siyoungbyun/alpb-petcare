@@ -61,4 +61,13 @@ public class MeController {
                 .body(new DataResponse<>(ResponseStatus.SUCCESS, "내 펫시터 프로필 생성 성공",
                         PetsitterProfileResponse.fromEntity(profile)));
     }
+
+    @DeleteMapping("/petsitter-profile")
+    public ResponseEntity<BaseResponse> deletePetsitterProfile(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        petsitterProfileService.deletePetsitterProfile(user);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseResponse(ResponseStatus.SUCCESS, "내 펫시터 프로필 삭제 성공"));
+    }
 }

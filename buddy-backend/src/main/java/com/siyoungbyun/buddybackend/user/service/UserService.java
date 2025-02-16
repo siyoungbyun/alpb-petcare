@@ -3,7 +3,7 @@ package com.siyoungbyun.buddybackend.user.service;
 import com.siyoungbyun.buddybackend.auth.core.JwtTokenProvider;
 import com.siyoungbyun.buddybackend.auth.dto.request.LoginRequest;
 import com.siyoungbyun.buddybackend.global.exception.DuplicateEmailException;
-import com.siyoungbyun.buddybackend.global.exception.UserNotFoundException;
+import com.siyoungbyun.buddybackend.global.exception.NotFoundException;
 import com.siyoungbyun.buddybackend.user.domain.User;
 import com.siyoungbyun.buddybackend.auth.dto.request.RegisterUserRequest;
 import com.siyoungbyun.buddybackend.user.dto.request.UpdateSelfRequest;
@@ -39,7 +39,7 @@ public class UserService {
     public User findByEmail(String email) {
         Optional<User> optUser = userRepository.findByEmail(email);
         if (optUser.isEmpty()) {
-            throw new UserNotFoundException("존재하지 않는 유저입니다.");
+            throw new NotFoundException("존재하지 않는 유저입니다.");
         }
         return optUser.get();
     }
@@ -48,7 +48,7 @@ public class UserService {
     public User UpdateUser(Long userId, UpdateSelfRequest updateSelfRequest) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
-            throw new UserNotFoundException("존재하지 않는 유저입니다.");
+            throw new NotFoundException("존재하지 않는 유저입니다.");
         }
         User user = userOpt.get();
         if (updateSelfRequest.getName() != null) {
@@ -64,7 +64,7 @@ public class UserService {
     public void deleteUser(Long userId) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
-            throw new UserNotFoundException("존재하지 않는 유저입니다.");
+            throw new NotFoundException("존재하지 않는 유저입니다.");
         }
         User user = userOpt.get();
         user.setDeletedAt(LocalDateTime.now());
