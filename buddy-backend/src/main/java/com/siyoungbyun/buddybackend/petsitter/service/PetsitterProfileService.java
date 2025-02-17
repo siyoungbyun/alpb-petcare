@@ -45,7 +45,7 @@ public class PetsitterProfileService {
         if (user.getPetsitterProfile() == null) {
             throw new NotFoundException("설정된 프로필이 없습니다.");
         }
-        Optional<PetsitterProfile> optProfile = petsitterProfileRepository.findById(petsitterId);
+        Optional<PetsitterProfile> optProfile = petsitterProfileRepository.findById(user.getPetsitterProfile().getId());
         if (optProfile.isEmpty()) {
             throw new NotFoundException("존재하지 않는 프로필입니다.");
         }
