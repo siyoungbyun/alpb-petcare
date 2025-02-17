@@ -120,7 +120,7 @@ export const api = {
   },
 
   async registerPetService(data) {
-    const response = await fetch(`${API_BASE_URL}/pet-services`, {
+    const response = await fetch(`${API_BASE_URL}/me/pet-services`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(data)
@@ -136,6 +136,20 @@ export const api = {
   },
 
   async getPetServices() {
+    const response = await fetch(`${API_BASE_URL}/me/pet-services`, {
+      headers: getHeaders()
+    })
+
+    const responseData = await response.json()
+
+    if (!response.ok) {
+      throw new Error(responseData.message || '서비스 목록 조회에 실패했습니다.')
+    }
+
+    return responseData.data
+  },
+
+  async getAllPetServices() {
     const response = await fetch(`${API_BASE_URL}/pet-services`, {
       headers: getHeaders()
     })

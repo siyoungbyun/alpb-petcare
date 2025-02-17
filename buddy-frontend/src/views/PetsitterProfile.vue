@@ -106,20 +106,24 @@
               <div class="overflow-x-auto">
                 <div class="flex space-x-6 pb-4">
                   <div
-                    v-for="service in mockServices"
+                    v-for="service in services"
                     :key="service.id"
                     class="flex-none w-80 bg-gray-50 rounded-lg p-6 border border-gray-100 hover:border-orange-200 transition-colors cursor-pointer"
                   >
                     <h3 class="font-medium text-lg text-gray-900 mb-2">{{ service.name }}</h3>
                     <div class="space-y-2 text-sm">
                       <p class="text-gray-600">
-                        <span class="text-gray-500">서비스 종류:</span> {{ service.type }}
+                        <span class="text-gray-500">서비스 종류:</span> {{ service.serviceType }}
                       </p>
                       <p class="text-gray-600">
                         <span class="text-gray-500">가격:</span> {{ service.price.toLocaleString() }}원
                       </p>
                       <p class="text-gray-600">
-                        <span class="text-gray-500">가능 요일:</span> {{ service.availableDays }}
+                        <span class="text-gray-500">가능 요일:</span> {{ formatDays(service.availableDays) }}
+                      </p>
+                      <p class="text-gray-600">
+                        <span class="text-gray-500">가능 시간:</span>
+                        {{ service.allDay ? '24시간' : `${formatTime(service.startTime)} - ${formatTime(service.endTime)}` }}
                       </p>
                     </div>
                   </div>
@@ -173,35 +177,41 @@ export default {
     const error = ref(null)
     const showCreateModal = ref(false)
     const showUpdateModal = ref(false)
-    const mockServices = ref([
-      {
-        id: 1,
-        name: '강아지 산책',
-        type: '방문 돌봄',
-        price: 20000,
-        availableDays: '월, 수, 금'
-      },
-      {
-        id: 2,
-        name: '고양이 돌봄',
-        type: '방문 돌봄',
-        price: 25000,
-        availableDays: '화, 목, 토'
-      },
-      {
-        id: 3,
-        name: '장기 돌봄',
-        type: '위탁',
-        price: 50000,
-        availableDays: '월, 화, 수, 목, 금'
-      }
-    ])
+    const services = ref([])
 
-    // Compute unique service types from mockServices
+    // Compute unique service types from actual services
     const availableServiceTypes = computed(() => {
-      const types = mockServices.value.map(service => service.type)
+      const types = services.value.map(service => service.serviceType)
       return [...new Set(types)] // Remove duplicates
     })
+
+    const formatDays = (days) => {
+      const dayMap = {
+        'MONDAY': '월',
+        'TUESDAY': '화',
+        'WEDNESDAY': '수',
+        'THURSDAY': '목',
+        'FRIDAY': '금',
+        'SATURDAY': '토',
+        'SUNDAY': '일'
+      }
+      return days.map(day => dayMap[day]).join(', ')
+    }
+
+    const formatTime = (isoTime) => {
+      if (!isoTime) return ''
+      const date = new Date(isoTime)
+      return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
+    }
+
+    const fetchServices = async () => {
+      try {
+        const response = await api.getPetServices()
+        services.value = response
+      } catch (err) {
+        console.error('Failed to fetch services:', err)
+      }
+    }
 
     const fetchProfile = async () => {
       try {
@@ -222,6 +232,7 @@ export default {
             experience: 0,
             services: []
           }
+          fetchServices() // Fetch services after confirming petsitter profile exists
         } else if (petsitterResponse.status === 'ERROR' && petsitterResponse.message === '프로필이 없습니다.') {
           profile.value = null
         } else {
@@ -276,7 +287,9 @@ export default {
       showUpdateModal,
       handleDelete,
       handleCreate,
-      mockServices,
+      services,
+      formatDays,
+      formatTime,
       availableServiceTypes
     }
   }

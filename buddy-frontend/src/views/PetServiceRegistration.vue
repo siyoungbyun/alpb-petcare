@@ -21,20 +21,6 @@
             />
           </div>
 
-          <!-- Contact Number -->
-          <div>
-            <label class="block text-base font-medium text-gray-900 mb-2">
-              연락처
-            </label>
-            <input
-              v-model="form.contact"
-              type="tel"
-              class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-100 shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
-              placeholder="010-XXXX-XXXX"
-              required
-            />
-          </div>
-
           <!-- Service Type -->
           <div>
             <label class="block text-base font-medium text-gray-900 mb-2">
@@ -47,7 +33,7 @@
                 @click.prevent="selectServiceType(serviceType)"
                 class="px-4 py-2 rounded-lg border"
                 :class="[
-                  form.selectedServiceType?.id === serviceType.id
+                  form.serviceType?.id === serviceType.id
                     ? 'border-orange-500 bg-orange-50 text-orange-700'
                     : 'border-gray-200 hover:border-gray-300 text-gray-700'
                 ]"
@@ -70,7 +56,7 @@
                   @click.prevent="toggleArea(area)"
                   class="px-4 py-2 rounded-lg border"
                   :class="[
-                    form.selectedAreas.some(a => a.id === area.id)
+                    form.locations.some(a => a.id === area.id)
                       ? 'border-orange-500 bg-orange-50 text-orange-700'
                       : 'border-gray-200 hover:border-gray-300 text-gray-700'
                   ]"
@@ -93,7 +79,7 @@
                 @click.prevent="togglePetType(petType)"
                 :class="[
                   'px-4 py-2 rounded-lg border',
-                  form.selectedPetTypes.some(p => p.id === petType.id)
+                  form.animalTypes.some(p => p.id === petType.id)
                     ? 'border-orange-500 bg-orange-50 text-orange-700'
                     : 'border-gray-200 hover:border-gray-300 text-gray-700'
                 ]"
@@ -144,7 +130,7 @@
                 @click="toggleDay(day)"
                 :class="[
                   'w-10 h-10 rounded-full flex items-center justify-center',
-                  form.availableDaysOfWeek.includes(getDayOfWeek(day)) ? 'bg-orange-500 text-white' : 'border border-gray-300 text-gray-700 hover:border-gray-400'
+                  form.availableDays.includes(getDayOfWeek(day)) ? 'bg-orange-500 text-white' : 'border border-gray-300 text-gray-700 hover:border-gray-400'
                 ]"
               >
                 {{ day }}
@@ -174,6 +160,18 @@
             </div>
           </div>
 
+          <!-- All Day Toggle -->
+          <div>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                v-model="form.allDay"
+                class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500"
+              />
+              <span class="text-base font-medium text-gray-900">24시간 서비스</span>
+            </label>
+          </div>
+
           <!-- Submit Button -->
           <BaseButton type="submit" variant="primary" size="lg" block class="mt-8">
             서비스 등록하기
@@ -188,6 +186,7 @@
 import BaseButton from '../components/BaseButton.vue'
 import { api } from '../services/api'
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'PetServiceRegistration',
@@ -195,17 +194,18 @@ export default {
     BaseButton
   },
   setup() {
+    const router = useRouter()
     const form = ref({
       name: '',
-      contact: '',
-      selectedAreas: [],
-      selectedServiceType: null,
-      selectedPetTypes: [],
-      price: '',
       description: '',
-      availableDaysOfWeek: [],
+      price: '',
+      serviceType: null,
       startTime: '',
-      endTime: ''
+      endTime: '',
+      availableDays: [],
+      locations: [],
+      animalTypes: [],
+      allDay: false
     })
     const areas = ref([])
     const petTypes = ref([])
@@ -244,56 +244,67 @@ export default {
     }
 
     const toggleArea = (area) => {
-      const index = form.value.selectedAreas.findIndex(a => a.id === area.id)
+      const index = form.value.locations.findIndex(a => a.id === area.id)
       if (index === -1) {
-        form.value.selectedAreas.push(area)
+        form.value.locations.push(area)
       } else {
-        form.value.selectedAreas.splice(index, 1)
+        form.value.locations.splice(index, 1)
       }
     }
 
     const handleSubmit = async () => {
+      const formatTimeToISO = (timeString) => {
+        if (!timeString) return null
+        // Create a new Date object for today
+        const today = new Date()
+        // Split the time string into hours and minutes
+        const [hours, minutes] = timeString.split(':')
+        // Set the hours and minutes on today's date
+        today.setHours(hours, minutes, 0, 0)
+        // Return ISO string
+        return today.toISOString()
+      }
+
       const serviceData = {
-        name: form.value.name,
-        serviceType: form.value.selectedServiceType?.value,
-        availableLocation: form.value.selectedAreas.map(area => area.value).join(','),
-        petTypes: form.value.selectedPetTypes.map(pet => pet.value).join(','),
-        description: form.value.description,
+        ...form.value,
         price: Number(form.value.price),
-        availableDaysOfWeek: form.value.availableDaysOfWeek,
-        startTime: form.value.startTime,
-        endTime: form.value.endTime
+        serviceType: form.value.serviceType?.name,
+        locations: form.value.locations.map(loc => loc.name),
+        animalTypes: form.value.animalTypes.map(type => type.name),
+        startTime: formatTimeToISO(form.value.startTime),
+        endTime: formatTimeToISO(form.value.endTime)
       }
 
       try {
         const response = await api.registerPetService(serviceData)
         console.log('Service registered successfully:', response)
-        // Redirect to home page
+        router.push('/petsitter-profile')
       } catch (error) {
         console.error('Error registering service:', error)
+        alert('서비스 등록에 실패했습니다.')
       }
     }
 
     const selectServiceType = (serviceType) => {
-      form.value.selectedServiceType = serviceType
+      form.value.serviceType = serviceType
     }
 
     const togglePetType = (petType) => {
-      const index = form.value.selectedPetTypes.findIndex(p => p.id === petType.id)
+      const index = form.value.animalTypes.findIndex(p => p.id === petType.id)
       if (index === -1) {
-        form.value.selectedPetTypes.push(petType)
+        form.value.animalTypes.push(petType)
       } else {
-        form.value.selectedPetTypes.splice(index, 1)
+        form.value.animalTypes.splice(index, 1)
       }
     }
 
     const toggleDay = (day) => {
       const dayOfWeek = getDayOfWeek(day)
-      const index = form.value.availableDaysOfWeek.indexOf(dayOfWeek)
+      const index = form.value.availableDays.indexOf(dayOfWeek)
       if (index === -1) {
-        form.value.availableDaysOfWeek.push(dayOfWeek)
+        form.value.availableDays.push(dayOfWeek)
       } else {
-        form.value.availableDaysOfWeek.splice(index, 1)
+        form.value.availableDays.splice(index, 1)
       }
     }
 

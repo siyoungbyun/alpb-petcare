@@ -15,48 +15,40 @@
         {{ error }}
       </div>
 
-      <!-- Service List -->
-      <div v-else class="space-y-4">
+      <!-- Service Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           v-for="service in services"
           :key="service.id"
-          class="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between"
+          class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
         >
-          <!-- Service Info -->
-          <div class="grid grid-cols-5 gap-8 flex-grow">
-            <div>
-              <div class="text-sm text-gray-500 mb-1">서비스 이름</div>
-              <div class="font-medium">{{ service.name }}</div>
-            </div>
-
-            <div>
-              <div class="text-sm text-gray-500 mb-1">펫시터 이름</div>
-              <div class="font-medium">{{ service.owner.name }}</div>
-            </div>
-
-            <div>
-              <div class="text-sm text-gray-500 mb-1">서비스 종류</div>
-              <div class="font-medium">{{ service.serviceType || '미정' }}</div>
-            </div>
-
-            <div>
-              <div class="text-sm text-gray-500 mb-1">가격</div>
-              <div class="font-medium">{{ service.price.toLocaleString() }}원</div>
-            </div>
-
-            <div>
-              <div class="text-sm text-gray-500 mb-1">서비스 가능 요일</div>
-              <div class="font-medium">{{ formatDaysOfWeek(service.availableDaysOfWeek) }}</div>
-            </div>
+          <div class="flex justify-between items-start mb-4">
+            <h2 class="text-xl font-semibold text-gray-900">{{ service.name }}</h2>
+            <span class="text-lg font-medium text-orange-600">
+              {{ service.price.toLocaleString() }}원
+            </span>
           </div>
 
-          <!-- Action Button -->
-          <button
-            class="px-6 py-2 rounded-lg"
-            :class="service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
-          >
-            {{ service.isAvailable ? '활성' : '비활성' }}
-          </button>
+          <div class="space-y-2 text-sm">
+            <p class="text-gray-600">
+              <span class="text-gray-500">서비스 종류:</span> {{ service.serviceType }}
+            </p>
+            <p class="text-gray-600">
+              <span class="text-gray-500">가능 요일:</span> {{ formatDays(service.availableDays) }}
+            </p>
+            <p class="text-gray-600">
+              <span class="text-gray-500">가능 시간:</span>
+              {{ service.allDay ? '24시간' : `${formatTime(service.startTime)} - ${formatTime(service.endTime)}` }}
+            </p>
+            <p class="text-gray-600">
+              <span class="text-gray-500">가능 지역:</span> {{ service.locations.join(', ') }}
+            </p>
+            <p class="text-gray-600">
+              <span class="text-gray-500">돌봄 가능:</span> {{ service.animalTypes.join(', ') }}
+            </p>
+          </div>
+
+          <p class="mt-4 text-gray-600 line-clamp-2">{{ service.description }}</p>
         </div>
       </div>
 
@@ -80,21 +72,17 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue'
 import { api } from '../services/api'
 
 export default {
   name: 'PetServiceList',
-  data() {
-    return {
-      services: [],
-      isLoading: true,
-      error: null
-    }
-  },
-  methods: {
-    formatDaysOfWeek(days) {
-      if (!days || !Array.isArray(days)) return '없음'
+  setup() {
+    const services = ref([])
+    const isLoading = ref(true)
+    const error = ref(null)
 
+    const formatDays = (days) => {
       const dayMap = {
         'MONDAY': '월',
         'TUESDAY': '화',
@@ -104,19 +92,38 @@ export default {
         'SATURDAY': '토',
         'SUNDAY': '일'
       }
-
       return days.map(day => dayMap[day]).join(', ')
     }
-  },
-  async created() {
-    try {
-      const services = await api.getPetServices()
-      this.services = services
-    } catch (err) {
-      this.error = err.message
-      console.error('Failed to fetch services:', err)
-    } finally {
-      this.isLoading = false
+
+    const formatTime = (isoTime) => {
+      if (!isoTime) return ''
+      const date = new Date(isoTime)
+      return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
+    }
+
+    const fetchServices = async () => {
+      try {
+        isLoading.value = true
+        const response = await api.getAllPetServices()
+        services.value = response
+      } catch (err) {
+        console.error('Failed to fetch services:', err)
+        error.value = '서비스 목록을 불러오는데 실패했습니다.'
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    onMounted(() => {
+      fetchServices()
+    })
+
+    return {
+      services,
+      isLoading,
+      error,
+      formatDays,
+      formatTime
     }
   }
 }

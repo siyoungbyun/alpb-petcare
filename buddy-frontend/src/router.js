@@ -3,6 +3,8 @@ import Home from './views/Home.vue'
 import PaymentTest from './components/PaymentTest.vue'
 import { useAuth } from './store/auth'
 import { api } from './services/api'
+import PetsitterProfile from './views/PetsitterProfile.vue'
+import PetServiceList from './views/PetServiceList.vue'
 
 const routes = [
   {
@@ -59,7 +61,7 @@ const routes = [
   {
     path: '/pet-services',
     name: 'PetServiceList',
-    component: () => import('./views/PetServiceList.vue'),
+    component: PetServiceList,
     meta: { requiresAuth: true }
   },
   {
@@ -77,7 +79,7 @@ const routes = [
   {
     path: '/petsitter-profile',
     name: 'PetsitterProfile',
-    component: () => import('./views/PetsitterProfile.vue'),
+    component: PetsitterProfile,
     meta: { requiresAuth: true }
   },
   // Catch-all route
