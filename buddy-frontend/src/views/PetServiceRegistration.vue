@@ -42,17 +42,17 @@
             </label>
             <div class="flex flex-wrap gap-2">
               <button
-                v-for="type in ['방문', '위탁', '산책']"
-                :key="type"
-                @click.prevent="selectServiceType(type)"
+                v-for="serviceType in serviceTypes"
+                :key="serviceType.id"
+                @click.prevent="selectServiceType(serviceType)"
                 class="px-4 py-2 rounded-lg border"
                 :class="[
-                  form.serviceType === type
+                  form.selectedServiceType?.id === serviceType.id
                     ? 'border-orange-500 bg-orange-50 text-orange-700'
                     : 'border-gray-200 hover:border-gray-300 text-gray-700'
                 ]"
               >
-                {{ type }}
+                {{ serviceType.name }}
               </button>
             </div>
           </div>
@@ -88,24 +88,17 @@
             </label>
             <div class="flex flex-wrap gap-2">
               <button
-                type="button"
-                @click="togglePetType('골든 리트리버')"
+                v-for="petType in petTypes"
+                :key="petType.id"
+                @click.prevent="togglePetType(petType)"
                 :class="[
                   'px-4 py-2 rounded-lg border',
-                  form.petTypes.includes('골든 리트리버') ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400'
+                  form.selectedPetTypes.some(p => p.id === petType.id)
+                    ? 'border-orange-500 bg-orange-50 text-orange-700'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
                 ]"
               >
-                골든 리트리버
-              </button>
-              <button
-                type="button"
-                @click="togglePetType('거북이')"
-                :class="[
-                  'px-4 py-2 rounded-lg border',
-                  form.petTypes.includes('거북이') ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400'
-                ]"
-              >
-                거북이
+                {{ petType.name }}
               </button>
             </div>
           </div>
@@ -206,8 +199,8 @@ export default {
       name: '',
       contact: '',
       selectedAreas: [],
-      serviceType: '',
-      petTypes: [],
+      selectedServiceType: null,
+      selectedPetTypes: [],
       price: '',
       description: '',
       availableDaysOfWeek: [],
@@ -215,8 +208,30 @@ export default {
       endTime: ''
     })
     const areas = ref([])
+    const petTypes = ref([])
+    const serviceTypes = ref([])
     const isLoading = ref(false)
     const error = ref(null)
+
+    const fetchServiceTypes = async () => {
+      try {
+        const response = await api.getCodeDetails(2)
+        serviceTypes.value = response
+      } catch (err) {
+        console.error('Failed to fetch service types:', err)
+        error.value = '서비스 종류 목록을 불러오는데 실패했습니다.'
+      }
+    }
+
+    const fetchPetTypes = async () => {
+      try {
+        const response = await api.getCodeDetails(1) // 2 is the code group ID for pet types
+        petTypes.value = response
+      } catch (err) {
+        console.error('Failed to fetch pet types:', err)
+        error.value = '반려동물 종류 목록을 불러오는데 실패했습니다.'
+      }
+    }
 
     const fetchAreas = async () => {
       try {
@@ -240,8 +255,9 @@ export default {
     const handleSubmit = async () => {
       const serviceData = {
         name: form.value.name,
-        serviceType: form.value.serviceType,
+        serviceType: form.value.selectedServiceType?.value,
         availableLocation: form.value.selectedAreas.map(area => area.value).join(','),
+        petTypes: form.value.selectedPetTypes.map(pet => pet.value).join(','),
         description: form.value.description,
         price: Number(form.value.price),
         availableDaysOfWeek: form.value.availableDaysOfWeek,
@@ -258,16 +274,16 @@ export default {
       }
     }
 
-    const selectServiceType = (type) => {
-      form.value.serviceType = type
+    const selectServiceType = (serviceType) => {
+      form.value.selectedServiceType = serviceType
     }
 
-    const togglePetType = (type) => {
-      const index = form.value.petTypes.indexOf(type)
+    const togglePetType = (petType) => {
+      const index = form.value.selectedPetTypes.findIndex(p => p.id === petType.id)
       if (index === -1) {
-        form.value.petTypes.push(type)
+        form.value.selectedPetTypes.push(petType)
       } else {
-        form.value.petTypes.splice(index, 1)
+        form.value.selectedPetTypes.splice(index, 1)
       }
     }
 
@@ -296,6 +312,8 @@ export default {
 
     onMounted(() => {
       fetchAreas()
+      fetchPetTypes()
+      fetchServiceTypes()
     })
 
     return {
@@ -303,6 +321,8 @@ export default {
       isLoading,
       error,
       areas,
+      petTypes,
+      serviceTypes,
       toggleArea,
       handleSubmit,
       selectServiceType,
