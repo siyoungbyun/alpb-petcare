@@ -1,4 +1,19 @@
+import { tokenStorage } from '../utils/token'
+
 const API_BASE_URL = 'http://localhost:8080/api/v1'
+
+const getHeaders = () => {
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+
+  const token = tokenStorage.getToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  return headers
+}
 
 export const api = {
   async login(credentials) {
@@ -7,8 +22,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(credentials),
-      credentials: 'include' // This is important for session cookies
+      body: JSON.stringify(credentials)
     })
 
     const data = await response.json()
@@ -17,46 +31,34 @@ export const api = {
       throw new Error(data.message || '로그인에 실패했습니다.')
     }
 
+    // Store the JWT token
+    tokenStorage.setToken(data.data.token)
     return data
   },
 
-  async registerPetService(data) {
-    const response = await fetch(`${API_BASE_URL}/pet-services`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-      credentials: 'include'
-    });
-
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      throw new Error(responseData.message || '서비스 등록에 실패했습니다.');
-    }
-
-    return responseData;
-  },
-
   async checkAuth() {
-    const response = await fetch(`${API_BASE_URL}/me`, {
-      credentials: 'include'
-    })
-    return response.ok
+    const token = tokenStorage.getToken()
+    if (!token) return false
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/me`, {
+        headers: getHeaders()
+      })
+      return response.ok
+    } catch (error) {
+      return false
+    }
   },
 
   async logout() {
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: 'POST',
-      credentials: 'include'
-    })
-    return response.ok
+    // For JWT, we just need to remove the token
+    tokenStorage.removeToken()
+    return true
   },
 
   async getMyProfile() {
     const response = await fetch(`${API_BASE_URL}/me`, {
-      credentials: 'include'
+      headers: getHeaders()
     })
 
     const data = await response.json()
@@ -71,11 +73,8 @@ export const api = {
   async updateProfile(data) {
     const response = await fetch(`${API_BASE_URL}/me`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-      credentials: 'include'
+      headers: getHeaders(),
+      body: JSON.stringify(data)
     })
 
     const responseData = await response.json()
@@ -90,7 +89,7 @@ export const api = {
   async withdrawal() {
     const response = await fetch(`${API_BASE_URL}/me`, {
       method: 'DELETE',
-      credentials: 'include'
+      headers: getHeaders()
     })
 
     if (!response.ok) {
@@ -98,6 +97,7 @@ export const api = {
       throw new Error(data.message || '회원 탈퇴에 실패했습니다.')
     }
 
+    tokenStorage.removeToken()
     return true
   },
 
@@ -107,8 +107,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
-      credentials: 'include'
+      body: JSON.stringify(data)
     })
 
     const responseData = await response.json()
@@ -120,21 +119,153 @@ export const api = {
     return responseData
   },
 
-  async getPetServices() {
+  async registerPetService(data) {
     const response = await fetch(`${API_BASE_URL}/pet-services`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include'
-    });
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    })
 
-    const responseData = await response.json();
+    const responseData = await response.json()
 
     if (!response.ok) {
-      throw new Error(responseData.message || '서비스 목록 조회에 실패했습니다.');
+      throw new Error(responseData.message || '서비스 등록에 실패했습니다.')
     }
 
-    return responseData.data;
+    return responseData
+  },
+
+  async getPetServices() {
+    const response = await fetch(`${API_BASE_URL}/pet-services`, {
+      headers: getHeaders()
+    })
+
+    const responseData = await response.json()
+
+    if (!response.ok) {
+      throw new Error(responseData.message || '서비스 목록 조회에 실패했습니다.')
+    }
+
+    return responseData.data
+  },
+
+  async getCodeGroups() {
+    const response = await fetch(`${API_BASE_URL}/code-groups`, {
+      headers: getHeaders()
+    })
+
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || '코드 그룹 목록 조회에 실패했습니다.')
+    }
+
+    const responseData = await response.json()
+    return responseData.data
+  },
+
+  async getCodeDetails(codeGroupId) {
+    const response = await fetch(`${API_BASE_URL}/code-groups/${codeGroupId}/code-details`, {
+      headers: getHeaders()
+    })
+
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || '코드 상세 목록 조회에 실패했습니다.')
+    }
+
+    const responseData = await response.json()
+    return responseData.data
+  },
+
+  async deleteCodeGroup(codeGroupId) {
+    const response = await fetch(`${API_BASE_URL}/code-groups/${codeGroupId}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    })
+
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || '코드 그룹 삭제에 실패했습니다.')
+    }
+
+    return true
+  },
+
+  async deleteCodeDetail(codeDetailId) {
+    const response = await fetch(`${API_BASE_URL}/code-details/${codeDetailId}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    })
+
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || '코드 상세 삭제에 실패했습니다.')
+    }
+
+    return true
+  },
+
+  async createCodeGroup(data) {
+    const response = await fetch(`${API_BASE_URL}/code-groups`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || '코드 그룹 생성에 실패했습니다.')
+    }
+
+    const responseData = await response.json()
+    return responseData.data
+  },
+
+  async createCodeDetail(codeGroupId, data) {
+    const response = await fetch(`${API_BASE_URL}/code-groups/${codeGroupId}/code-details`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || '코드 상세 생성에 실패했습니다.')
+    }
+
+    const responseData = await response.json()
+    return responseData.data
+  },
+
+  async updateCodeGroup(codeGroupId, data) {
+    const response = await fetch(`${API_BASE_URL}/code-groups/${codeGroupId}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || '코드 그룹 수정에 실패했습니다.')
+    }
+
+    const responseData = await response.json()
+    return responseData.data
+  },
+
+  async updateCodeDetail(codeDetailId, data) {
+    const response = await fetch(`${API_BASE_URL}/code-details/${codeDetailId}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || '코드 상세 수정에 실패했습니다.')
+    }
+
+    const responseData = await response.json()
+    return responseData.data
   }
 }

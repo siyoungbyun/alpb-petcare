@@ -67,6 +67,12 @@ const routes = [
     name: 'PaymentTest',
     component: PaymentTest,
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/code-management',
+    name: 'CodeManagement',
+    component: () => import('./views/CodeManagement.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

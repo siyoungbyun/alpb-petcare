@@ -40,6 +40,14 @@
                 서비스 예약
               </router-link>
             </NavDropdown>
+
+            <router-link
+              to="/code-management"
+              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors text-base"
+              :class="{ 'bg-gray-100': $route.path === '/code-management' }"
+            >
+              코드 관리
+            </router-link>
           </div>
         </div>
 
