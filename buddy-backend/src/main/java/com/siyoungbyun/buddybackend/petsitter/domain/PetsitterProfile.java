@@ -5,6 +5,8 @@ import com.siyoungbyun.buddybackend.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 
 @Entity
 @Getter
@@ -26,6 +28,9 @@ public class PetsitterProfile extends BaseEntity {
     @Setter
     @OneToOne
     private User user;
+
+    @OneToMany(mappedBy = "petsitter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PetService> petServices;
 
     @Builder
     private PetsitterProfile(User user, String description) {

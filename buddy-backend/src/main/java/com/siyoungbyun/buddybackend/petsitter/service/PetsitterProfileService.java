@@ -10,7 +10,6 @@ import com.siyoungbyun.buddybackend.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 
 @Service
 public class PetsitterProfileService {

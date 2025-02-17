@@ -5,9 +5,13 @@ import com.siyoungbyun.buddybackend.auth.core.CustomUserDetails;
 import com.siyoungbyun.buddybackend.global.dto.response.BaseResponse;
 import com.siyoungbyun.buddybackend.global.dto.response.DataResponse;
 import com.siyoungbyun.buddybackend.global.enums.ResponseStatus;
+import com.siyoungbyun.buddybackend.petsitter.domain.PetService;
 import com.siyoungbyun.buddybackend.petsitter.domain.PetsitterProfile;
+import com.siyoungbyun.buddybackend.petsitter.dto.request.CreatePetServiceRequest;
 import com.siyoungbyun.buddybackend.petsitter.dto.request.CreatePetsitterRequest;
+import com.siyoungbyun.buddybackend.petsitter.dto.response.PetServiceResponse;
 import com.siyoungbyun.buddybackend.petsitter.dto.response.PetsitterProfileResponse;
+import com.siyoungbyun.buddybackend.petsitter.service.PetServiceService;
 import com.siyoungbyun.buddybackend.petsitter.service.PetsitterProfileService;
 import com.siyoungbyun.buddybackend.user.domain.User;
 import com.siyoungbyun.buddybackend.user.dto.request.UpdateSelfRequest;
@@ -19,6 +23,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("v1/me")
 public class MeController {
@@ -28,6 +35,9 @@ public class MeController {
 
     @Autowired
     private PetsitterProfileService petsitterProfileService;
+
+    @Autowired
+    private PetServiceService petServiceService;
 
     @GetMapping
     public ResponseEntity<DataResponse<UserResponse>> getSelf(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -80,5 +90,31 @@ public class MeController {
         petsitterProfileService.deletePetsitterProfile(user);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(ResponseStatus.SUCCESS, "내 펫시터 프로필 삭제 성공"));
+    }
+
+    @GetMapping("/pet-services")
+    public ResponseEntity<DataResponse<List<PetServiceResponse>>> getPetServices(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        PetsitterProfile profile = petsitterProfileService.getPetsitterProfile(user);
+        List<PetServiceResponse> petServices = petServiceService.getPetServicesByPetsitter(profile.getId())
+                .stream()
+                .map(petService -> PetServiceResponse.fromEntity(petService))
+                .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new DataResponse<>(ResponseStatus.SUCCESS, "펫 서비스 조회 성공",
+                        petServices));
+    }
+
+    @PostMapping("/pet-services")
+    public ResponseEntity<DataResponse<PetServiceResponse>> createPetService(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestBody CreatePetServiceRequest createPetServiceRequest) {
+        User user = customUserDetails.getUser();
+        PetsitterProfile profile = petsitterProfileService.getPetsitterProfile(user);
+        PetService service = petServiceService.createPetService(profile, createPetServiceRequest);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new DataResponse<>(ResponseStatus.SUCCESS, "펫 서비스 생성 성공",
+                        PetServiceResponse.fromEntity(service)));
     }
 }
