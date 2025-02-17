@@ -38,6 +38,6 @@ public class CodeDetail extends BaseEntity {
     private boolean isActive;
 
     @ManyToOne
-    @JoinColumn(name = "code_group_id")
+    @JoinColumn(name = "code_group_internal_id")
     private CodeGroup codeGroup;
 }

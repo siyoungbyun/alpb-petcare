@@ -14,7 +14,7 @@ import java.util.List;
 public class CodeGroup extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "code_group_id")
+    @Column(name = "code_group_internal_id")
     private Long id;
 
     @Setter
