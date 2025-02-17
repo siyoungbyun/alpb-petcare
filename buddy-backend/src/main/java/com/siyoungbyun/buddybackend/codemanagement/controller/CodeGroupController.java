@@ -7,6 +7,7 @@ import com.siyoungbyun.buddybackend.codemanagement.dto.request.CreateCodeDetailR
 import com.siyoungbyun.buddybackend.codemanagement.dto.request.CreateCodeGroupRequest;
 import com.siyoungbyun.buddybackend.codemanagement.dto.request.UpdateCodeGroupRequest;
 import com.siyoungbyun.buddybackend.codemanagement.dto.response.CodeDetailResponse;
+import com.siyoungbyun.buddybackend.codemanagement.dto.response.CodeGroupResponse;
 import com.siyoungbyun.buddybackend.codemanagement.service.CodeManagementService;
 import com.siyoungbyun.buddybackend.global.dto.response.BaseResponse;
 import com.siyoungbyun.buddybackend.global.dto.response.DataResponse;
@@ -27,34 +28,41 @@ public class CodeGroupController {
     private CodeManagementService codeManagementService;
 
     @GetMapping
-    public ResponseEntity<DataResponse<List<CodeGroup>>> getAllCodeGroups() {
+    public ResponseEntity<DataResponse<List<CodeGroupResponse>>> getAllCodeGroups() {
+        List<CodeGroupResponse> codeGroups = codeManagementService.getCodeGroups()
+                .stream()
+                .map(codeGroup -> CodeGroupResponse.fromEntity(codeGroup))
+                .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DataResponse<>(ResponseStatus.SUCCESS, "코드 그룹 목록 조회 성공",
-                        codeManagementService.getCodeGroups()));
+                        codeGroups));
     }
 
     @GetMapping("/{codeGroupId}")
-    public ResponseEntity<DataResponse<CodeGroup>> getCodeGroup(@PathVariable Long codeGroupId) {
+    public ResponseEntity<DataResponse<CodeGroupResponse>> getCodeGroup(@PathVariable Long codeGroupId) {
+        CodeGroup codeGroup = codeManagementService.getCodeGroup(codeGroupId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DataResponse<>(ResponseStatus.SUCCESS, "코드 그룹 조회 성공",
-                        codeManagementService.getCodeGroup(codeGroupId)));
+                        CodeGroupResponse.fromEntity(codeGroup)));
     }
 
     @PostMapping
-    public ResponseEntity<DataResponse<CodeGroup>> createCodeGroup(
+    public ResponseEntity<DataResponse<CodeGroupResponse>> createCodeGroup(
             @RequestBody CreateCodeGroupRequest createCodeGroupRequest) {
+        CodeGroup codeGroup = codeManagementService.createCodeGroup(createCodeGroupRequest);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DataResponse<>(ResponseStatus.SUCCESS, "코드 그룹 생성 성공",
-                        codeManagementService.createCodeGroup(createCodeGroupRequest)));
+                        CodeGroupResponse.fromEntity(codeGroup)));
     }
 
     @PatchMapping("/{codeGroupId}")
-    public ResponseEntity<DataResponse<CodeGroup>> updateCodeGroup(
+    public ResponseEntity<DataResponse<CodeGroupResponse>> updateCodeGroup(
             @PathVariable Long codeGroupId,
             @RequestBody UpdateCodeGroupRequest updateCodeGroupRequest) {
+        CodeGroup codeGroup = codeManagementService.updateCodeGroup(codeGroupId, updateCodeGroupRequest);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DataResponse<>(ResponseStatus.SUCCESS, "코드 그룹 수정 성공",
-                        codeManagementService.updateCodeGroup(codeGroupId, updateCodeGroupRequest)));
+                        CodeGroupResponse.fromEntity(codeGroup)));
     }
 
     @DeleteMapping("/{codeGroupId}")
