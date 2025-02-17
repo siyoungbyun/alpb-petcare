@@ -73,6 +73,18 @@ const routes = [
     name: 'CodeManagement',
     component: () => import('./views/CodeManagement.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/petsitter-profile',
+    name: 'PetsitterProfile',
+    component: () => import('./views/PetsitterProfile.vue'),
+    meta: { requiresAuth: true }
+  },
+  // Catch-all route
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('./views/NotFound.vue')
   }
 ]
 
@@ -84,11 +96,14 @@ const router = createRouter({
 // Add navigation guard for protected routes
 router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth) {
+    console.log(`Route ${to.path} requires authentication.`)
     try {
       const isAuthenticated = await api.checkAuth()
+      console.log('Authentication status:', isAuthenticated)
       useAuth.setLoggedIn(isAuthenticated)
 
       if (!isAuthenticated) {
+        console.log('User not authenticated. Redirecting to /login.')
         next('/login')
         return
       }

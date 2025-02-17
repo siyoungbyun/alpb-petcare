@@ -1,11 +1,18 @@
-<script setup>
+<script>
 import NavBar from './components/NavBar.vue'
+
+export default {
+  name: 'App',
+  components: {
+    NavBar
+  }
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div id="app">
     <NavBar />
-    <router-view></router-view>
+    <router-view />
   </div>
 </template>
 

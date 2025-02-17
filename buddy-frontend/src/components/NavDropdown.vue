@@ -19,7 +19,7 @@
     <div
       class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200"
     >
-      <slot></slot>
+      <slot :isActive="isActive"></slot>
     </div>
   </div>
 </template>
@@ -30,6 +30,10 @@ export default {
   props: {
     title: {
       type: String,
+      required: true
+    },
+    isActive: {
+      type: Function,
       required: true
     }
   }

@@ -267,5 +267,49 @@ export const api = {
 
     const responseData = await response.json()
     return responseData.data
+  },
+
+  async getPetsitterProfile() {
+    const response = await fetch(`${API_BASE_URL}/me/petsitter-profile`, {
+      headers: getHeaders()
+    })
+
+    const responseData = await response.json()
+
+    if (!response.ok && !(responseData.status === 'ERROR' && responseData.message === '프로필이 없습니다.')) {
+      throw new Error(responseData.message || '프로필 조회에 실패했습니다.')
+    }
+
+    return responseData
+  },
+
+  async createPetsitterProfile(data) {
+    const response = await fetch(`${API_BASE_URL}/me/petsitter-profile`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    })
+
+    const responseData = await response.json()
+
+    if (!response.ok) {
+      throw new Error(responseData.message || '프로필 생성에 실패했습니다.')
+    }
+
+    return responseData
+  },
+
+  async deletePetsitterProfile() {
+    const response = await fetch(`${API_BASE_URL}/me/petsitter-profile`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    })
+
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || '프로필 삭제에 실패했습니다.')
+    }
+
+    return true
   }
 }

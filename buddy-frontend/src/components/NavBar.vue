@@ -17,28 +17,36 @@
             </router-link>
 
             <!-- Replace the two separate links with NavDropdown -->
-            <NavDropdown title="펫시터 서비스">
-              <router-link
-                to="/pet-services"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                :class="{ 'bg-gray-100': $route.path === '/pet-services' }"
-              >
-                서비스 목록
-              </router-link>
-              <router-link
-                to="/pet-service-registration"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                :class="{ 'bg-gray-100': $route.path === '/pet-service-registration' }"
-              >
-                서비스 등록
-              </router-link>
-              <router-link
-                to="/service-booking"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                :class="{ 'bg-gray-100': $route.path === '/service-booking' }"
-              >
-                서비스 예약
-              </router-link>
+            <NavDropdown
+              title="펫시터 서비스"
+              :isActive="isActive"
+            >
+              <div class="space-y-1">
+                <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  펫시터 서비스
+                </h3>
+                <router-link
+                  to="/pet-services"
+                  class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+                  :class="{ 'bg-gray-100 text-gray-900': isActive('/pet-services') }"
+                >
+                  <span class="truncate">서비스 목록</span>
+                </router-link>
+                <router-link
+                  to="/pet-service-registration"
+                  class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+                  :class="{ 'bg-gray-100 text-gray-900': isActive('/pet-service-registration') }"
+                >
+                  <span class="truncate">서비스 등록</span>
+                </router-link>
+                <router-link
+                  :to="{ name: 'PetsitterProfile' }"
+                  class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+                  :class="{ 'bg-gray-100 text-gray-900': isActive('/petsitter-profile') }"
+                >
+                  <span class="truncate">펫시터 프로필</span>
+                </router-link>
+              </div>
             </NavDropdown>
 
             <router-link
@@ -120,12 +128,12 @@
 </template>
 
 <script>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BaseButton from './BaseButton.vue'
 import NavDropdown from './NavDropdown.vue'
 import { api } from '../services/api'
 import { useAuth } from '../store/auth'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
 
 export default {
   name: 'NavBar',
@@ -137,6 +145,10 @@ export default {
     const router = useRouter()
     const isMenuOpen = ref(false)
     const menuContainer = ref(null)
+
+    const isActive = (path) => {
+      return router.currentRoute.value.path === path
+    }
 
     const handleClickOutside = (event) => {
       if (menuContainer.value && !menuContainer.value.contains(event.target)) {
@@ -163,16 +175,17 @@ export default {
       document.addEventListener('click', handleClickOutside)
     })
 
-    onBeforeUnmount(() => {
+    onUnmounted(() => {
       document.removeEventListener('click', handleClickOutside)
     })
 
     return {
+      isLoggedIn: useAuth.isLoggedIn,
       isMenuOpen,
       menuContainer,
       toggleMenu,
       handleLogout,
-      isLoggedIn: useAuth.isLoggedIn
+      isActive
     }
   }
 }
