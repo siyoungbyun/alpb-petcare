@@ -102,7 +102,7 @@ export const api = {
   },
 
   async signup(data) {
-    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -325,5 +325,58 @@ export const api = {
     }
 
     return true
+  },
+
+  async createBooking(petServiceId, bookingData) {
+    const response = await fetch(`${API_BASE_URL}/pet-services/${petServiceId}/reservations`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(bookingData)
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || '예약에 실패했습니다.');
+    }
+
+    return responseData.data;
+  },
+
+  async confirmBooking(petServiceId, reservationId, confirm) {
+    const response = await fetch(
+      `${API_BASE_URL}/pet-services/${petServiceId}/reservations/${reservationId}/confirm?confirm=${confirm}`,
+      {
+        method: 'POST',
+        headers: getHeaders(),
+      }
+    );
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || '예약 상태 변경에 실패했습니다.');
+    }
+
+    return responseData.data;
+  },
+
+  async getPetsitterBookings() {
+    const response = await fetch(`${API_BASE_URL}/me/petsitter-profile/reservations`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || '예약 목록을 불러오는데 실패했습니다.');
+    }
+
+    if (responseData.status !== 'SUCCESS') {
+      throw new Error(responseData.message || '예약 목록을 불러오는데 실패했습니다.');
+    }
+
+    return responseData.data;
   }
 }

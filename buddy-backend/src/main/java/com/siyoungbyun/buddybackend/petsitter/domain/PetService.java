@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -63,6 +64,9 @@ public class PetService extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "petsitter_profile_id")
     private PetsitterProfile petsitter;
+
+    @OneToMany(mappedBy = "petService")
+    private List<Reservation> reservations = new ArrayList<>();
 
     @Builder
     private PetService(

@@ -2,8 +2,12 @@ package com.siyoungbyun.buddybackend.user.domain;
 
 import com.siyoungbyun.buddybackend.global.domain.BaseEntity;
 import com.siyoungbyun.buddybackend.petsitter.domain.PetsitterProfile;
+import com.siyoungbyun.buddybackend.petsitter.domain.Reservation;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -39,6 +43,9 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "petsitter_id")
     private PetsitterProfile petsitterProfile;
+
+    @OneToMany(mappedBy = "user")
+    private List<Reservation> reservations = new ArrayList<>();
 
     @Builder
     private User(String email, String password, String name, String phoneNumber, boolean isAdmin) {

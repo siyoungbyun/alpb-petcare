@@ -11,8 +11,10 @@ import com.siyoungbyun.buddybackend.petsitter.dto.request.CreatePetServiceReques
 import com.siyoungbyun.buddybackend.petsitter.dto.request.CreatePetsitterRequest;
 import com.siyoungbyun.buddybackend.petsitter.dto.response.PetServiceResponse;
 import com.siyoungbyun.buddybackend.petsitter.dto.response.PetsitterProfileResponse;
+import com.siyoungbyun.buddybackend.petsitter.dto.response.ReservationResponse;
 import com.siyoungbyun.buddybackend.petsitter.service.PetServiceService;
 import com.siyoungbyun.buddybackend.petsitter.service.PetsitterProfileService;
+import com.siyoungbyun.buddybackend.petsitter.service.ReservationService;
 import com.siyoungbyun.buddybackend.user.domain.User;
 import com.siyoungbyun.buddybackend.user.dto.request.UpdateSelfRequest;
 import com.siyoungbyun.buddybackend.user.dto.response.UserResponse;
@@ -38,6 +40,9 @@ public class MeController {
 
     @Autowired
     private PetServiceService petServiceService;
+
+    @Autowired
+    private ReservationService reservationService;
 
     @GetMapping
     public ResponseEntity<DataResponse<UserResponse>> getSelf(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -90,6 +95,20 @@ public class MeController {
         petsitterProfileService.deletePetsitterProfile(user);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new BaseResponse(ResponseStatus.SUCCESS, "내 펫시터 프로필 삭제 성공"));
+    }
+
+    @GetMapping("/petsitter-profile/reservations")
+    public ResponseEntity<DataResponse<List<ReservationResponse>>> getIncomingReservations(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        PetsitterProfile profile = petsitterProfileService.getPetsitterProfile(user);
+        List<ReservationResponse> reservations = reservationService.getReservationsByPetsitter(profile.getId())
+                .stream()
+                .map(reservation -> ReservationResponse.fromEntity(reservation))
+                .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new DataResponse<>(ResponseStatus.SUCCESS, "예약 목록 조회 성공",
+                        reservations));
     }
 
     @GetMapping("/pet-services")

@@ -46,6 +46,13 @@
                 >
                   <span class="truncate">펫시터 프로필</span>
                 </router-link>
+                <router-link
+                  to="/booking-management"
+                  class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+                  :class="{ 'bg-gray-100 text-gray-900': isActive('/booking-management') }"
+                >
+                  <span class="truncate">예약 관리</span>
+                </router-link>
               </div>
             </NavDropdown>
 

@@ -82,6 +82,12 @@ const routes = [
     component: PetsitterProfile,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/booking-management',
+    name: 'BookingManagement',
+    component: () => import('./views/BookingManagement.vue'),
+    meta: { requiresAuth: true }
+  },
   // Catch-all route
   {
     path: '/:pathMatch(.*)*',

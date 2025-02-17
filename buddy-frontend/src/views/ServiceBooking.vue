@@ -45,36 +45,44 @@
             </div>
           </div>
 
+          <!-- Date Selection -->
+          <div class="space-y-4 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900">예약 날짜 선택</h2>
+            <div>
+              <input
+                v-model="selectedDate"
+                type="date"
+                :min="new Date().toISOString().split('T')[0]"
+                class="block w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-orange-500 focus:border-orange-500"
+                :class="{ 'border-red-300': dateError }"
+                required
+              />
+              <p v-if="dateError" class="mt-1 text-sm text-red-600">
+                {{ dateError }}
+              </p>
+            </div>
+          </div>
+
           <!-- Time Selection -->
           <div class="space-y-4">
             <h2 class="text-lg font-semibold text-gray-900">예약 시간 선택</h2>
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">시작 시간</label>
-                <input
-                  v-model="bookingTime.startTime"
-                  type="time"
-                  :min="formatTime(service?.startTime)"
+                <input v-model="bookingTime.startTime" type="time" :min="formatTime(service?.startTime)"
                   :max="formatTime(service?.endTime)"
                   class="block w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-orange-500 focus:border-orange-500"
-                  :class="{ 'border-red-300': startTimeError }"
-                  required
-                />
+                  :class="{ 'border-red-300': startTimeError }" required />
                 <p v-if="startTimeError" class="mt-1 text-sm text-red-600">
                   {{ startTimeError }}
                 </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">종료 시간</label>
-                <input
-                  v-model="bookingTime.endTime"
-                  type="time"
-                  :min="formatTime(service?.startTime)"
+                <input v-model="bookingTime.endTime" type="time" :min="formatTime(service?.startTime)"
                   :max="formatTime(service?.endTime)"
                   class="block w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-orange-500 focus:border-orange-500"
-                  :class="{ 'border-red-300': endTimeError }"
-                  required
-                />
+                  :class="{ 'border-red-300': endTimeError }" required />
                 <p v-if="endTimeError" class="mt-1 text-sm text-red-600">
                   {{ endTimeError }}
                 </p>
@@ -97,12 +105,12 @@
 
           <!-- Submit Button -->
           <button
-            @click="handlePayment"
-            :disabled="!bookingTime.startTime || !bookingTime.endTime || startTimeError || endTimeError || timeRangeError"
-            class="w-full py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
-            :class="{ 'opacity-50 cursor-not-allowed': !bookingTime.startTime || !bookingTime.endTime || startTimeError || endTimeError || timeRangeError }"
+            @click.prevent="handleBooking"
+            :disabled="Boolean(!selectedDate || !bookingTime.startTime || !bookingTime.endTime || dateError || startTimeError || endTimeError || timeRangeError)"
+            class="w-full py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium cursor-pointer"
+            :class="{ 'opacity-50 cursor-not-allowed': !selectedDate || !bookingTime.startTime || !bookingTime.endTime || dateError || startTimeError || endTimeError || timeRangeError }"
           >
-            결제하기
+            예약하기
           </button>
         </div>
       </div>
@@ -130,6 +138,9 @@ export default {
     const startTimeError = ref('')
     const endTimeError = ref('')
     const timeRangeError = ref('')
+    const userProfile = ref(null)
+    const selectedDate = ref('')
+    const dateError = ref('')
 
     const formatDays = (days) => {
       if (!days) return ''
@@ -188,7 +199,7 @@ export default {
       const end = new Date(`2000-01-01T${bookingTime.value.endTime}`)
       const hours = (end - start) / (1000 * 60 * 60)
 
-      return service.value.price * hours
+      return Math.max(0, service.value.price * hours)
     }
 
     const fetchService = async () => {
@@ -217,26 +228,57 @@ export default {
       }
     }
 
-    const handlePayment = () => {
+    const fetchUserProfile = async () => {
+      try {
+        userProfile.value = await api.getMyProfile()
+      } catch (err) {
+        console.error('Failed to fetch user profile:', err)
+      }
+    }
+
+    const handleBooking = async () => {
+      console.log('Booking initiated');
+
       if (!validateTime()) {
-        return
+        console.log('Time validation failed');
+        return;
       }
 
-      // TODO: Implement payment logic
-      console.log('Payment processing...', {
-        serviceId: service.value.id,
-        startTime: bookingTime.value.startTime,
-        endTime: bookingTime.value.endTime,
-        totalPrice: calculateTotalPrice()
-      })
-    }
+      try {
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+
+        const bookingData = {
+          reservationDate: today,
+          startTime: bookingTime.value.startTime,  // Already in "HH:mm" format
+          endTime: bookingTime.value.endTime       // Already in "HH:mm" format
+        };
+
+        console.log('Booking request data:', bookingData);
+
+        const response = await api.createBooking(service.value.id, bookingData);
+        console.log('Booking response:', response);
+
+        if (response.status === 'PENDING') {
+          alert('예약이 완료되었습니다.');
+          router.push('/'); // or redirect to booking list/confirmation page
+        } else {
+          throw new Error('예약 상태가 올바르지 않습니다.');
+        }
+      } catch (err) {
+        console.error('Booking failed:', err);
+        alert(err.message || '예약 처리 중 오류가 발생했습니다.');
+      }
+    };
 
     // Validate times whenever they change
     watch(() => bookingTime.value.startTime, validateTime)
     watch(() => bookingTime.value.endTime, validateTime)
 
+
     onMounted(() => {
       fetchService()
+      fetchUserProfile()
     })
 
     return {
@@ -250,7 +292,10 @@ export default {
       formatDays,
       formatTime,
       calculateTotalPrice,
-      handlePayment
+      handleBooking,
+      userProfile,
+      selectedDate,
+      dateError,
     }
   }
 }

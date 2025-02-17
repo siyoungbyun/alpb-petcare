@@ -57,6 +57,22 @@
             />
           </div>
 
+          <!-- Phone Number Field -->
+          <div class="space-y-2">
+            <label class="block text-base font-medium text-gray-900">
+              전화번호
+            </label>
+            <input
+              v-model="form.phoneNumber"
+              type="tel"
+              class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none text-base"
+              placeholder="-"
+              pattern="[0-9]{11}"
+              required
+              :disabled="isLoading"
+            />
+          </div>
+
           <!-- Terms Checkboxes -->
           <div class="space-y-4 py-4">
             <div class="flex items-center">
@@ -140,6 +156,7 @@ export default {
         email: '',
         password: '',
         name: '',
+        phoneNumber: '',
         termsService: false,
         termsPrivacy: false
       },
@@ -149,13 +166,22 @@ export default {
   },
   computed: {
     isFormValid() {
-      return this.form.termsService && this.form.termsPrivacy
+      return (
+        this.form.termsService &&
+        this.form.termsPrivacy &&
+        this.form.phoneNumber.length === 11 &&
+        this.form.phoneNumber.match(/^[0-9]+$/)
+      )
     }
   },
   methods: {
     async handleSubmit() {
       if (!this.isFormValid) {
-        this.error = '필수 약관에 모두 동의해주세요.'
+        if (!this.form.termsService || !this.form.termsPrivacy) {
+          this.error = '필수 약관에 모두 동의해주세요.'
+        } else if (!this.form.phoneNumber.match(/^[0-9]{11}$/)) {
+          this.error = '전화번호를 올바른 형식으로 입력해주세요.'
+        }
         return
       }
 
@@ -166,11 +192,15 @@ export default {
         const signupData = {
           email: this.form.email,
           password: this.form.password,
-          name: this.form.name
+          name: this.form.name,
+          phoneNumber: this.form.phoneNumber
         }
 
         await api.signup(signupData)
-        await api.login(signupData)
+        await api.login({
+          email: this.form.email,
+          password: this.form.password
+        })
         useAuth.setLoggedIn(true)
         this.$router.push('/')
       } catch (err) {
