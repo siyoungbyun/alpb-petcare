@@ -54,6 +54,7 @@ public class SecurityConfig {
         // http request 인증 설정
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(permitAllWhiteList).permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**").permitAll()
                 // 사용자 삭제는 관리자 권한만 가능
                 .requestMatchers(HttpMethod.DELETE, "/user").hasRole("ADMIN")
                 // 그 외 요청 체크
