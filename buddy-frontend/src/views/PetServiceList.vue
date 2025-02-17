@@ -49,6 +49,16 @@
           </div>
 
           <p class="mt-4 text-gray-600 line-clamp-2">{{ service.description }}</p>
+
+          <!-- 예약 Button for other petsitters' services -->
+          <div v-if="service.petsitterId !== userProfile?.id" class="mt-4">
+            <button
+              @click="handleBooking(service)"
+              class="w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              예약
+            </button>
+          </div>
         </div>
       </div>
 
@@ -72,15 +82,18 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { api } from '../services/api'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'PetServiceList',
   setup() {
+    const router = useRouter()
     const services = ref([])
     const isLoading = ref(true)
     const error = ref(null)
+    const userProfile = ref(null)
 
     const formatDays = (days) => {
       const dayMap = {
@@ -101,6 +114,14 @@ export default {
       return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
     }
 
+    const fetchUserProfile = async () => {
+      try {
+        userProfile.value = await api.getMyProfile()
+      } catch (err) {
+        console.error('Failed to fetch user profile:', err)
+      }
+    }
+
     const fetchServices = async () => {
       try {
         isLoading.value = true
@@ -114,14 +135,25 @@ export default {
       }
     }
 
+    const handleBooking = (service) => {
+      // Navigate to booking page with service details
+      router.push({
+        path: '/service-booking',
+        query: { serviceId: service.id }
+      })
+    }
+
     onMounted(() => {
       fetchServices()
+      fetchUserProfile()
     })
 
     return {
       services,
       isLoading,
       error,
+      userProfile,
+      handleBooking,
       formatDays,
       formatTime
     }
