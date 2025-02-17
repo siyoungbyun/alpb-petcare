@@ -49,4 +49,8 @@ public class PetServiceService {
         PetsitterProfile profile = optProfile.get();
         return profile.getPetServices();
     }
+
+    public List<PetService> getAllPetServices() {
+        return petServiceRepository.findAll();
+    }
 }
