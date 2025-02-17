@@ -40,36 +40,19 @@
             <label class="block text-base font-medium text-gray-900 mb-2">
               서비스 선택
             </label>
-            <div class="grid grid-cols-3 gap-4">
+            <div class="flex flex-wrap gap-2">
               <button
-                type="button"
-                @click="selectServiceType('산책')"
+                v-for="type in ['방문', '위탁', '산책']"
+                :key="type"
+                @click.prevent="selectServiceType(type)"
+                class="px-4 py-2 rounded-lg border"
                 :class="[
-                  'py-3 px-4 rounded-lg border text-center',
-                  form.serviceType === '산책' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400'
+                  form.serviceType === type
+                    ? 'border-orange-500 bg-orange-50 text-orange-700'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
                 ]"
               >
-                산책
-              </button>
-              <button
-                type="button"
-                @click="selectServiceType('돌봄')"
-                :class="[
-                  'py-3 px-4 rounded-lg border text-center',
-                  form.serviceType === '돌봄' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400'
-                ]"
-              >
-                돌봄
-              </button>
-              <button
-                type="button"
-                @click="selectServiceType('미용')"
-                :class="[
-                  'py-3 px-4 rounded-lg border text-center',
-                  form.serviceType === '미용' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400'
-                ]"
-              >
-                미용
+                {{ type }}
               </button>
             </div>
           </div>
@@ -79,27 +62,22 @@
             <label class="block text-base font-medium text-gray-900 mb-2">
               지역
             </label>
-            <div class="flex flex-wrap gap-2">
-              <button
-                type="button"
-                @click="toggleRegion('강북 (서울)')"
-                :class="[
-                  'px-4 py-2 rounded-lg border',
-                  form.selectedRegions.includes('강북 (서울)') ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400'
-                ]"
-              >
-                강북 (서울)
-              </button>
-              <button
-                type="button"
-                @click="toggleRegion('경기')"
-                :class="[
-                  'px-4 py-2 rounded-lg border',
-                  form.selectedRegions.includes('경기') ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400'
-                ]"
-              >
-                경기
-              </button>
+            <div class="overflow-x-auto scrollbar-hide">
+              <div class="flex gap-2 pb-2">
+                <button
+                  v-for="area in areas"
+                  :key="area.id"
+                  @click.prevent="toggleArea(area)"
+                  class="px-4 py-2 rounded-lg border"
+                  :class="[
+                    form.selectedAreas.some(a => a.id === area.id)
+                      ? 'border-orange-500 bg-orange-50 text-orange-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                  ]"
+                >
+                  {{ area.name }}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -216,58 +194,94 @@
 <script>
 import BaseButton from '../components/BaseButton.vue'
 import { api } from '../services/api'
+import { ref, onMounted } from 'vue'
 
 export default {
   name: 'PetServiceRegistration',
   components: {
     BaseButton
   },
-  data() {
-    return {
-      form: {
-        name: '',
-        contact: '',
-        serviceType: '',
-        selectedRegions: [],
-        petTypes: [],
-        price: '',
-        description: '',
-        availableDaysOfWeek: [],
-        startTime: '',
-        endTime: ''
+  setup() {
+    const form = ref({
+      name: '',
+      contact: '',
+      selectedAreas: [],
+      serviceType: '',
+      petTypes: [],
+      price: '',
+      description: '',
+      availableDaysOfWeek: [],
+      startTime: '',
+      endTime: ''
+    })
+    const areas = ref([])
+    const isLoading = ref(false)
+    const error = ref(null)
+
+    const fetchAreas = async () => {
+      try {
+        const response = await api.getCodeDetails(3) // 3 is the code group ID for areas
+        areas.value = response
+      } catch (err) {
+        console.error('Failed to fetch areas:', err)
+        error.value = '지역 목록을 불러오는데 실패했습니다.'
       }
     }
-  },
-  methods: {
-    selectServiceType(type) {
-      this.form.serviceType = type
-    },
-    toggleRegion(region) {
-      const index = this.form.selectedRegions.indexOf(region)
+
+    const toggleArea = (area) => {
+      const index = form.value.selectedAreas.findIndex(a => a.id === area.id)
       if (index === -1) {
-        this.form.selectedRegions.push(region)
+        form.value.selectedAreas.push(area)
       } else {
-        this.form.selectedRegions.splice(index, 1)
+        form.value.selectedAreas.splice(index, 1)
       }
-    },
-    togglePetType(type) {
-      const index = this.form.petTypes.indexOf(type)
+    }
+
+    const handleSubmit = async () => {
+      const serviceData = {
+        name: form.value.name,
+        serviceType: form.value.serviceType,
+        availableLocation: form.value.selectedAreas.map(area => area.value).join(','),
+        description: form.value.description,
+        price: Number(form.value.price),
+        availableDaysOfWeek: form.value.availableDaysOfWeek,
+        startTime: form.value.startTime,
+        endTime: form.value.endTime
+      }
+
+      try {
+        const response = await api.registerPetService(serviceData)
+        console.log('Service registered successfully:', response)
+        // Redirect to home page
+      } catch (error) {
+        console.error('Error registering service:', error)
+      }
+    }
+
+    const selectServiceType = (type) => {
+      form.value.serviceType = type
+    }
+
+    const togglePetType = (type) => {
+      const index = form.value.petTypes.indexOf(type)
       if (index === -1) {
-        this.form.petTypes.push(type)
+        form.value.petTypes.push(type)
       } else {
-        this.form.petTypes.splice(index, 1)
+        form.value.petTypes.splice(index, 1)
       }
-    },
-    toggleDay(day) {
-      const dayOfWeek = this.getDayOfWeek(day)
-      const index = this.form.availableDaysOfWeek.indexOf(dayOfWeek)
+    }
+
+    const toggleDay = (day) => {
+      const dayOfWeek = getDayOfWeek(day)
+      const index = form.value.availableDaysOfWeek.indexOf(dayOfWeek)
       if (index === -1) {
-        this.form.availableDaysOfWeek.push(dayOfWeek)
+        form.value.availableDaysOfWeek.push(dayOfWeek)
       } else {
-        this.form.availableDaysOfWeek.splice(index, 1)
+        form.value.availableDaysOfWeek.splice(index, 1)
       }
-    },
-    getDayOfWeek(day) {
+    }
+
+    const getDayOfWeek = (day) => {
       const dayMap = {
         '월': 'MONDAY',
         '화': 'TUESDAY',
@@ -278,27 +292,35 @@ export default {
         '일': 'SUNDAY'
       }
       return dayMap[day]
-    },
-    async handleSubmit() {
-      const serviceData = {
-        name: this.form.name,
-        serviceType: this.form.serviceType,
-        availableLocation: this.form.selectedRegions.join(', '),
-        description: this.form.description,
-        price: Number(this.form.price),
-        availableDaysOfWeek: this.form.availableDaysOfWeek,
-        startTime: this.form.startTime,
-        endTime: this.form.endTime
-      }
+    }
 
-      try {
-        const response = await api.registerPetService(serviceData)
-        console.log('Service registered successfully:', response)
-        this.$router.push('/')
-      } catch (error) {
-        console.error('Error registering service:', error)
-      }
+    onMounted(() => {
+      fetchAreas()
+    })
+
+    return {
+      form,
+      isLoading,
+      error,
+      areas,
+      toggleArea,
+      handleSubmit,
+      selectServiceType,
+      togglePetType,
+      toggleDay,
+      getDayOfWeek
     }
   }
 }
 </script>
+
+<style scoped>
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+</style>

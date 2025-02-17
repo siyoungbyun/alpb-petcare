@@ -83,8 +83,8 @@
                 <div>
                   <p class="text-sm text-gray-500">가능한 서비스</p>
                   <ul class="mt-2 list-disc list-inside text-gray-800">
-                    <li v-for="service in profile.services" :key="service">
-                      {{ service }}
+                    <li v-for="serviceType in availableServiceTypes" :key="serviceType">
+                      {{ serviceType }}
                     </li>
                   </ul>
                 </div>
@@ -157,7 +157,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { api } from '../services/api'
 import PetsitterProfileModal from '../components/PetsitterProfileModal.vue'
 
@@ -196,6 +196,12 @@ export default {
         availableDays: '월, 화, 수, 목, 금'
       }
     ])
+
+    // Compute unique service types from mockServices
+    const availableServiceTypes = computed(() => {
+      const types = mockServices.value.map(service => service.type)
+      return [...new Set(types)] // Remove duplicates
+    })
 
     const fetchProfile = async () => {
       try {
@@ -270,7 +276,8 @@ export default {
       showUpdateModal,
       handleDelete,
       handleCreate,
-      mockServices
+      mockServices,
+      availableServiceTypes
     }
   }
 }
