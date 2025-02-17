@@ -52,9 +52,20 @@ public class MeController {
                 .body(new BaseResponse(ResponseStatus.SUCCESS, "회원탈퇴 성공"));
     }
 
+    @GetMapping("/petsitter-profile")
+    public ResponseEntity<DataResponse<PetsitterProfileResponse>> getPetsitterProfile(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        PetsitterProfile profile = petsitterProfileService.getPetsitterProfile(user);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new DataResponse<>(ResponseStatus.SUCCESS, "내 펫시터 프로필 조회 성공",
+                        PetsitterProfileResponse.fromEntity(profile)));
+    }
+
     @PostMapping("/petsitter-profile")
-    public ResponseEntity<DataResponse<PetsitterProfileResponse>> createPetsitterProfile(@RequestBody CreatePetsitterRequest createPetsitterRequest,
-                                                                                         @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<DataResponse<PetsitterProfileResponse>> createPetsitterProfile(
+            @RequestBody CreatePetsitterRequest createPetsitterRequest,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = customUserDetails.getUser();
         PetsitterProfile profile = petsitterProfileService.createPetsitterProfile(user, createPetsitterRequest);
         return ResponseEntity.status(HttpStatus.OK)

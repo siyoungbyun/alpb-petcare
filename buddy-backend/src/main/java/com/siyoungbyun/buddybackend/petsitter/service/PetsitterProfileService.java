@@ -26,6 +26,14 @@ public class PetsitterProfileService {
     }
 
     @Transactional
+    public PetsitterProfile getPetsitterProfile(User user) {
+        if (user.getPetsitterProfile() == null) {
+            throw new NotFoundException("프로필이 없습니다.");
+        }
+        return user.getPetsitterProfile();
+    }
+
+    @Transactional
     public PetsitterProfile createPetsitterProfile(User user, CreatePetsitterRequest createPetsitterRequest) {
         if (user.getPetsitterProfile() != null) {
             throw new AlreadyExistsException("프로필이 이미 존재합니다.");
@@ -41,14 +49,13 @@ public class PetsitterProfileService {
         return profile;
     }
 
+    @Transactional
     public void deletePetsitterProfile(User user) {
-        if (user.getPetsitterProfile() == null) {
+        PetsitterProfile petsitterProfile = user.getPetsitterProfile();
+        if (petsitterProfile == null) {
             throw new NotFoundException("설정된 프로필이 없습니다.");
         }
-        Optional<PetsitterProfile> optProfile = petsitterProfileRepository.findById(user.getPetsitterProfile().getId());
-        if (optProfile.isEmpty()) {
-            throw new NotFoundException("존재하지 않는 프로필입니다.");
-        }
-        petsitterProfileRepository.delete(optProfile.get());
+        user.setPetsitterProfile(null);
+        userRepository.save(user);
     }
 }

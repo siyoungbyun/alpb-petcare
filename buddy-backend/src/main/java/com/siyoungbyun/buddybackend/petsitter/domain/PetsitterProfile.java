@@ -24,7 +24,7 @@ public class PetsitterProfile extends BaseEntity {
     private boolean isApproved;
 
     @Setter
-    @OneToOne(mappedBy = "petsitterProfile")
+    @OneToOne
     private User user;
 
     @Builder

@@ -36,7 +36,7 @@ public class User extends BaseEntity {
     private boolean isAdmin;
 
     @Setter
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "petsitter_id")
     private PetsitterProfile petsitterProfile;
 
