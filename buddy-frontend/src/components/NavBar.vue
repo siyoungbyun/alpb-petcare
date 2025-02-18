@@ -4,7 +4,7 @@
       <div class="flex justify-between h-20">
         <div class="flex items-center space-x-8">
           <router-link to="/" class="text-2xl font-bold text-gray-800">
-            로고 여기
+            BUDDY
           </router-link>
 
           <div class="flex items-center space-x-6">

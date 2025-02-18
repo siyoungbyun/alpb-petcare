@@ -62,21 +62,6 @@
         </div>
       </div>
 
-      <!-- Navigation Buttons -->
-      <div class="flex justify-between mt-8">
-        <button
-          class="px-4 py-2 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
-          @click="$router.push('/pet-service-registration')"
-        >
-          이전
-        </button>
-        <button
-          class="px-4 py-2 bg-orange-500 text-white hover:bg-orange-600 rounded-lg transition-colors"
-          @click="$router.push('/pet-service-registration')"
-        >
-          다음
-        </button>
-      </div>
     </div>
   </div>
 </template>
