@@ -77,9 +77,8 @@
               </div>
             </NavDropdown>
 
-            <!-- Admin Dropdown -->
+            <!-- Admin Dropdown - now visible for all logged in users -->
             <NavDropdown
-              v-if="isAdmin"
               title="관리자"
               :isActive="isActive"
               class="px-2"
@@ -97,68 +96,21 @@
           </div>
         </div>
 
-        <!-- Auth buttons -->
+        <!-- Auth buttons section -->
         <div class="flex items-center">
-          <div v-if="!isLoggedIn" class="flex space-x-2">
-            <BaseButton
-              v-if="$route.path !== '/login'"
-              to="/login"
-              variant="outline"
-            >
+          <template v-if="isLoggedIn">
+            <BaseButton @click="handleLogout" variant="secondary">
+              로그아웃
+            </BaseButton>
+          </template>
+          <template v-else>
+            <BaseButton @click="$router.push('/login')" variant="secondary" class="mr-4">
               로그인
             </BaseButton>
-            <BaseButton
-              v-if="$route.path !== '/signup'"
-              to="/signup"
-              variant="primary"
-            >
+            <BaseButton @click="$router.push('/signup')" variant="primary">
               회원가입
             </BaseButton>
-          </div>
-          <div v-else class="flex items-center space-x-4">
-            <!-- Profile Circle - Make it a router link -->
-            <router-link
-              to="/profile"
-              class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-medium hover:bg-orange-600 transition-colors"
-            >
-              P
-            </router-link>
-            <!-- Menu Button with Dropdown Container -->
-            <div class="relative" ref="menuContainer">
-              <button
-                @click="toggleMenu"
-                class="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-6 h-6 text-gray-600"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                  />
-                </svg>
-              </button>
-
-              <!-- Dropdown Menu -->
-              <div
-                v-if="isMenuOpen"
-                class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200 z-50"
-              >
-                <button
-                  @click="handleLogout"
-                  class="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  로그아웃
-                </button>
-              </div>
-            </div>
-          </div>
+          </template>
         </div>
       </div>
     </div>
@@ -183,7 +135,6 @@ export default {
     const router = useRouter()
     const isMenuOpen = ref(false)
     const menuContainer = ref(null)
-    const isAdmin = ref(false) // You'll need to implement admin check logic
 
     const isActive = (path) => {
       return router.currentRoute.value.path === path
@@ -220,7 +171,6 @@ export default {
 
     return {
       isLoggedIn: useAuth.isLoggedIn,
-      isAdmin,
       isMenuOpen,
       menuContainer,
       toggleMenu,
