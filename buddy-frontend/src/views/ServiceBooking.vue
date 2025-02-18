@@ -94,12 +94,18 @@
           </div>
 
           <!-- Total Price -->
-          <div class="bg-orange-50 rounded-lg p-4">
-            <div class="flex justify-between items-center">
-              <span class="text-gray-900 font-medium">총 결제 금액</span>
-              <span class="text-xl font-bold text-orange-600">
-                {{ calculateTotalPrice().toLocaleString() }}원
-              </span>
+          <div v-if="calculatedPrice" class="mb-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">예상 결제 금액</h3>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-gray-600">
+                시간당 요금: {{ formatPrice(service.price) }}원
+              </p>
+              <p class="text-gray-600">
+                예약 시간: {{ calculateDuration() }}시간
+              </p>
+              <p class="text-lg font-medium text-gray-900 mt-2">
+                총 금액: {{ formatPrice(calculatedPrice) }}원
+              </p>
             </div>
           </div>
 
@@ -141,6 +147,7 @@ export default {
     const userProfile = ref(null)
     const selectedDate = ref('')
     const dateError = ref('')
+    const calculatedPrice = ref(0)
 
     const formatDays = (days) => {
       if (!days) return ''
@@ -190,17 +197,20 @@ export default {
       return true
     }
 
-    const calculateTotalPrice = () => {
-      if (!service.value?.price || !bookingTime.value.startTime || !bookingTime.value.endTime) {
-        return 0
-      }
+    const calculateDuration = () => {
+      if (!bookingTime.value.startTime || !bookingTime.value.endTime) return 0;
 
-      const start = new Date(`2000-01-01T${bookingTime.value.startTime}`)
-      const end = new Date(`2000-01-01T${bookingTime.value.endTime}`)
-      const hours = (end - start) / (1000 * 60 * 60)
+      const startHour = parseInt(bookingTime.value.startTime.split(':')[0]);
+      const startMinute = parseInt(bookingTime.value.startTime.split(':')[1]);
+      const endHour = parseInt(bookingTime.value.endTime.split(':')[0]);
+      const endMinute = parseInt(bookingTime.value.endTime.split(':')[1]);
 
-      return Math.max(0, service.value.price * hours)
-    }
+      return ((endHour - startHour) + (endMinute - startMinute) / 60).toFixed(1);
+    };
+
+    const formatPrice = (price) => {
+      return price?.toLocaleString('ko-KR') || '0';
+    };
 
     const fetchService = async () => {
       try {
@@ -245,13 +255,17 @@ export default {
       }
 
       try {
-        // Get today's date in YYYY-MM-DD format
-        const today = new Date().toISOString().split('T')[0];
+        // Calculate duration in hours
+        const durationHours = parseFloat(calculateDuration());
+
+        // Calculate total price based on hourly rate
+        const totalPrice = Math.round(service.value.price * durationHours);
 
         const bookingData = {
-          reservationDate: today,
-          startTime: bookingTime.value.startTime,  // Already in "HH:mm" format
-          endTime: bookingTime.value.endTime       // Already in "HH:mm" format
+          reservationDate: selectedDate.value,
+          startTime: bookingTime.value.startTime,
+          endTime: bookingTime.value.endTime,
+          totalPrice: totalPrice
         };
 
         console.log('Booking request data:', bookingData);
@@ -261,7 +275,7 @@ export default {
 
         if (response.status === 'PENDING') {
           alert('예약이 완료되었습니다.');
-          router.push('/'); // or redirect to booking list/confirmation page
+          router.push('/my-bookings');
         } else {
           throw new Error('예약 상태가 올바르지 않습니다.');
         }
@@ -275,6 +289,15 @@ export default {
     watch(() => bookingTime.value.startTime, validateTime)
     watch(() => bookingTime.value.endTime, validateTime)
 
+    // Update calculated price whenever booking time changes
+    watch([() => bookingTime.value.startTime, () => bookingTime.value.endTime], () => {
+      if (bookingTime.value.startTime && bookingTime.value.endTime && service.value?.price) {
+        const duration = parseFloat(calculateDuration());
+        calculatedPrice.value = Math.round(service.value.price * duration);
+      } else {
+        calculatedPrice.value = 0;
+      }
+    });
 
     onMounted(() => {
       fetchService()
@@ -291,11 +314,13 @@ export default {
       timeRangeError,
       formatDays,
       formatTime,
-      calculateTotalPrice,
+      calculateDuration,
+      formatPrice,
       handleBooking,
       userProfile,
       selectedDate,
       dateError,
+      calculatedPrice
     }
   }
 }

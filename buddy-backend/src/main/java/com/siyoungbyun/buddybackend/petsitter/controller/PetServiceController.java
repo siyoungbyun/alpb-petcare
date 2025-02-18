@@ -56,14 +56,22 @@ public class PetServiceController {
 
     @PostMapping("/{petServiceId}/reservations/{reservationId}/confirm")
     public ResponseEntity<DataResponse<ReservationResponse>> confirmReservation(
-            @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @PathVariable Long petServiceId,
             @PathVariable Long reservationId,
             @RequestParam boolean confirm
     ) {
         Reservation updatedReservation = reservationService.confirmReservation(reservationId, confirm);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DataResponse<>(ResponseStatus.SUCCESS, "펫 서비스 예약 상태 변경 성공",
+                        ReservationResponse.fromEntity(updatedReservation)));
+    }
+
+    @PostMapping("/{petServiceId}/reservations/{reservationId}/confirm-transaction")
+    public ResponseEntity<DataResponse<ReservationResponse>> confirmReservationTransaction(
+            @PathVariable Long reservationId
+    ) {
+        Reservation updatedReservation = reservationService.confirmTransaction(reservationId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new DataResponse<>(ResponseStatus.SUCCESS, "펫 서비스 구매 성공",
                         ReservationResponse.fromEntity(updatedReservation)));
     }
 }

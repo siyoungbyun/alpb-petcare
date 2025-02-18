@@ -7,24 +7,21 @@
             로고 여기
           </router-link>
 
-          <div class="flex items-center space-x-1">
-            <router-link
-              to="/pet-management"
-              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors text-base"
-              :class="{ 'bg-gray-100': $route.path === '/pet-management' }"
-            >
-              내 반려동물 관리
-            </router-link>
-
-            <!-- Replace the two separate links with NavDropdown -->
+          <div class="flex items-center space-x-6">
+            <!-- User Services Dropdown -->
             <NavDropdown
-              title="펫시터 서비스"
+              title="이용 서비스"
               :isActive="isActive"
+              class="px-2"
             >
               <div class="space-y-1">
-                <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  펫시터 서비스
-                </h3>
+                <router-link
+                  to="/pet-management"
+                  class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+                  :class="{ 'bg-gray-100 text-gray-900': isActive('/pet-management') }"
+                >
+                  <span class="truncate">내 반려동물 관리</span>
+                </router-link>
                 <router-link
                   to="/pet-services"
                   class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
@@ -32,6 +29,23 @@
                 >
                   <span class="truncate">서비스 목록</span>
                 </router-link>
+                <router-link
+                  to="/my-bookings"
+                  class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+                  :class="{ 'bg-gray-100 text-gray-900': isActive('/my-bookings') }"
+                >
+                  <span class="truncate">내 예약 목록</span>
+                </router-link>
+              </div>
+            </NavDropdown>
+
+            <!-- Petsitter Services Dropdown -->
+            <NavDropdown
+              title="펫시터 서비스"
+              :isActive="isActive"
+              class="px-2"
+            >
+              <div class="space-y-1">
                 <router-link
                   to="/pet-service-registration"
                   class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
@@ -56,13 +70,23 @@
               </div>
             </NavDropdown>
 
-            <router-link
-              to="/code-management"
-              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors text-base"
-              :class="{ 'bg-gray-100': $route.path === '/code-management' }"
+            <!-- Admin Dropdown -->
+            <NavDropdown
+              v-if="isAdmin"
+              title="관리자"
+              :isActive="isActive"
+              class="px-2"
             >
-              코드 관리
-            </router-link>
+              <div class="space-y-1">
+                <router-link
+                  to="/code-management"
+                  class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+                  :class="{ 'bg-gray-100 text-gray-900': isActive('/code-management') }"
+                >
+                  <span class="truncate">코드 관리</span>
+                </router-link>
+              </div>
+            </NavDropdown>
           </div>
         </div>
 
@@ -152,6 +176,7 @@ export default {
     const router = useRouter()
     const isMenuOpen = ref(false)
     const menuContainer = ref(null)
+    const isAdmin = ref(false) // You'll need to implement admin check logic
 
     const isActive = (path) => {
       return router.currentRoute.value.path === path
@@ -188,6 +213,7 @@ export default {
 
     return {
       isLoggedIn: useAuth.isLoggedIn,
+      isAdmin,
       isMenuOpen,
       menuContainer,
       toggleMenu,

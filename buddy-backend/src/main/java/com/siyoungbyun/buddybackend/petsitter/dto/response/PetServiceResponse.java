@@ -1,7 +1,6 @@
 package com.siyoungbyun.buddybackend.petsitter.dto.response;
 
 import com.siyoungbyun.buddybackend.petsitter.domain.PetService;
-import com.siyoungbyun.buddybackend.petsitter.service.PetServiceService;
 import lombok.Builder;
 import lombok.Getter;
 

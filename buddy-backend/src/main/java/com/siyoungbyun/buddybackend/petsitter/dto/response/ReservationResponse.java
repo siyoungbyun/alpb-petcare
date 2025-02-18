@@ -18,6 +18,7 @@ public class ReservationResponse {
     private LocalDate reservationDate;
     private LocalTime startTime;
     private LocalTime endTime;
+    private int totalPrice;
     private Long userId;
     private String userName;
     private Long petServiceId;
@@ -30,6 +31,7 @@ public class ReservationResponse {
                 .reservationDate(reservation.getReservationDate())
                 .startTime(reservation.getStartTime())
                 .endTime(reservation.getEndTime())
+                .totalPrice(reservation.getTotalPrice())
                 .userId(reservation.getUser().getId())
                 .userName(reservation.getUser().getName())
                 .petServiceId(reservation.getPetService().getId())

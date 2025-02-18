@@ -15,4 +15,6 @@ public class CreateReservationRequest {
 
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
+
+    private int totalPrice;
 }

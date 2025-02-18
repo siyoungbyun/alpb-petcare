@@ -88,6 +88,12 @@ const routes = [
     component: () => import('./views/BookingManagement.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/my-bookings',
+    name: 'UserBookings',
+    component: () => import('./views/UserBookings.vue'),
+    meta: { requiresAuth: true }
+  },
   // Catch-all route
   {
     path: '/:pathMatch(.*)*',

@@ -43,6 +43,7 @@ public class ReservationService {
                 .reservationDate(createReservationRequest.getReservationDate())
                 .startTime(createReservationRequest.getStartTime())
                 .endTime(createReservationRequest.getEndTime())
+                .totalPrice(createReservationRequest.getTotalPrice())
                 .user(user)
                 .petService(petService)
                 .build();
@@ -63,9 +64,22 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
+    public Reservation confirmTransaction(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 예약입니다."));
+
+        reservation.setStatus(ReservationStatus.PURCHASED);
+
+        return reservationRepository.save(reservation);
+    }
+
     public List<Reservation> getReservationsByPetsitter(Long petsitterId) {
         PetsitterProfile profile = petsitterProfileRepository.findById(petsitterId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 펫시터입니다."));
         return reservationRepository.findByPetService_Petsitter(profile);
+    }
+
+    public List<Reservation> getReservationsByUser(User user) {
+        return reservationRepository.findByUser(user);
     }
 }

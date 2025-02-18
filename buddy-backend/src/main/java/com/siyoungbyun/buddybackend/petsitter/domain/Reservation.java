@@ -27,6 +27,8 @@ public class Reservation extends BaseEntity {
 
     private LocalTime endTime;
 
+    private int totalPrice;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -36,11 +38,13 @@ public class Reservation extends BaseEntity {
     private PetService petService;
 
     @Builder
-    private Reservation(LocalDate reservationDate, LocalTime startTime, LocalTime endTime, User user, PetService petService) {
+    private Reservation(LocalDate reservationDate, LocalTime startTime, LocalTime endTime, int totalPrice,
+    User user, PetService petService) {
         this.reservationDate = reservationDate;
         this.status = ReservationStatus.PENDING;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.totalPrice = totalPrice;
         this.user = user;
         this.petService = petService;
     }

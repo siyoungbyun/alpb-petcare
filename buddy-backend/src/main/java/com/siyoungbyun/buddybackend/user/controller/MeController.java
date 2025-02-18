@@ -136,4 +136,17 @@ public class MeController {
                 .body(new DataResponse<>(ResponseStatus.SUCCESS, "펫 서비스 생성 성공",
                         PetServiceResponse.fromEntity(service)));
     }
+
+    @GetMapping("/reservations")
+    public ResponseEntity<DataResponse<List<ReservationResponse>>> getMyReservations(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        List<ReservationResponse> reservations = reservationService.getReservationsByUser(user)
+                .stream()
+                .map(reservation -> ReservationResponse.fromEntity(reservation))
+                .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new DataResponse<>(ResponseStatus.SUCCESS, "내 예약 목록 조회 성공",
+                        reservations));
+    }
 }
