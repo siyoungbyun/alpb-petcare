@@ -42,6 +42,28 @@
             />
           </div>
 
+          <!-- Add confirm password field -->
+          <div>
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
+              비밀번호 확인
+            </label>
+            <div class="mt-1">
+              <input
+                id="confirmPassword"
+                v-model="confirmPassword"
+                type="password"
+                required
+                class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none text-base"
+                placeholder="비밀번호를 입력해주세요"
+                :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': passwordMismatch }"
+              />
+            </div>
+            <p v-if="passwordMismatch" class="mt-2 text-sm text-red-600">
+              비밀번호가 일치하지 않습니다.
+            </p>
+          </div>
+
+
           <!-- Name Field -->
           <div class="space-y-2">
             <label class="block text-base font-medium text-gray-900">
@@ -161,7 +183,9 @@ export default {
         termsPrivacy: false
       },
       isLoading: false,
-      error: null
+      error: null,
+      confirmPassword: '',
+      passwordMismatch: false
     }
   },
   computed: {
@@ -170,7 +194,9 @@ export default {
         this.form.termsService &&
         this.form.termsPrivacy &&
         this.form.phoneNumber.length === 11 &&
-        this.form.phoneNumber.match(/^[0-9]+$/)
+        this.form.phoneNumber.match(/^[0-9]+$/) &&
+        this.form.password === this.confirmPassword &&
+        !this.passwordMismatch
       )
     }
   },
@@ -181,6 +207,9 @@ export default {
           this.error = '필수 약관에 모두 동의해주세요.'
         } else if (!this.form.phoneNumber.match(/^[0-9]{11}$/)) {
           this.error = '전화번호를 올바른 형식으로 입력해주세요.'
+        } else if (this.form.password !== this.confirmPassword) {
+          this.passwordMismatch = true
+          this.error = '비밀번호가 일치하지 않습니다.'
         }
         return
       }
