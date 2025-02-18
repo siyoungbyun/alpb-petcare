@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from './views/Home.vue'
-import PaymentTest from './components/PaymentTest.vue'
 import { useAuth } from './store/auth'
 import { api } from './services/api'
 import PetsitterProfile from './views/PetsitterProfile.vue'
@@ -63,12 +62,6 @@ const routes = [
     name: 'PetServiceList',
     component: PetServiceList,
     meta: { requiresAuth: true }
-  },
-  {
-    path: '/payment',
-    name: 'PaymentTest',
-    component: PaymentTest,
-    meta: { requiresAuth: false }
   },
   {
     path: '/code-management',

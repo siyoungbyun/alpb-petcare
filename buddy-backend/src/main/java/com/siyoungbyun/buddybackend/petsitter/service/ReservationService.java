@@ -64,11 +64,12 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
-    public Reservation confirmTransaction(Long reservationId) {
+    public Reservation confirmTransaction(Long reservationId, String applyNum) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 예약입니다."));
 
         reservation.setStatus(ReservationStatus.PURCHASED);
+        reservation.setApplyNum(applyNum);
 
         return reservationRepository.save(reservation);
     }

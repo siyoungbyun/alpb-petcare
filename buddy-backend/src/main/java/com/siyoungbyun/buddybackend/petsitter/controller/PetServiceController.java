@@ -4,6 +4,7 @@ import com.siyoungbyun.buddybackend.auth.core.CustomUserDetails;
 import com.siyoungbyun.buddybackend.global.dto.response.DataResponse;
 import com.siyoungbyun.buddybackend.global.enums.ResponseStatus;
 import com.siyoungbyun.buddybackend.petsitter.domain.Reservation;
+import com.siyoungbyun.buddybackend.petsitter.dto.request.ConfirmReservationTransactionRequest;
 import com.siyoungbyun.buddybackend.petsitter.dto.request.CreateReservationRequest;
 import com.siyoungbyun.buddybackend.petsitter.dto.response.PetServiceResponse;
 import com.siyoungbyun.buddybackend.petsitter.dto.response.ReservationResponse;
@@ -67,9 +68,11 @@ public class PetServiceController {
 
     @PostMapping("/{petServiceId}/reservations/{reservationId}/confirm-transaction")
     public ResponseEntity<DataResponse<ReservationResponse>> confirmReservationTransaction(
-            @PathVariable Long reservationId
-    ) {
-        Reservation updatedReservation = reservationService.confirmTransaction(reservationId);
+            @PathVariable Long reservationId,
+            @RequestBody ConfirmReservationTransactionRequest confirmReservationTransactionRequest
+            ) {
+        Reservation updatedReservation = reservationService.confirmTransaction(
+                reservationId, confirmReservationTransactionRequest.getApplyNum());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DataResponse<>(ResponseStatus.SUCCESS, "펫 서비스 구매 성공",
                         ReservationResponse.fromEntity(updatedReservation)));

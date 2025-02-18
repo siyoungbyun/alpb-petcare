@@ -29,6 +29,9 @@ public class Reservation extends BaseEntity {
 
     private int totalPrice;
 
+    @Setter
+    private String applyNum;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
