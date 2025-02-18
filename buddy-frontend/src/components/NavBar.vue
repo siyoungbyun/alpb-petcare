@@ -23,11 +23,11 @@
                   <span class="truncate">내 반려동물 관리</span>
                 </router-link>
                 <router-link
-                  to="/pet-services"
+                  to="/petsitters"
                   class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
-                  :class="{ 'bg-gray-100 text-gray-900': isActive('/pet-services') }"
+                  :class="{ 'bg-gray-100 text-gray-900': isActive('/petsitters') }"
                 >
-                  <span class="truncate">서비스 목록</span>
+                  <span class="truncate">펫시터 찾기</span>
                 </router-link>
                 <router-link
                   to="/my-bookings"

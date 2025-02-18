@@ -10,6 +10,8 @@ import com.siyoungbyun.buddybackend.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Service
 public class PetsitterProfileService {
@@ -22,6 +24,10 @@ public class PetsitterProfileService {
                                    UserRepository userRepository) {
         this.petsitterProfileRepository = petsitterProfileRepository;
         this.userRepository = userRepository;
+    }
+
+    public List<PetsitterProfile> getAllPetsitterProfiles() {
+        return petsitterProfileRepository.findAll();
     }
 
     @Transactional

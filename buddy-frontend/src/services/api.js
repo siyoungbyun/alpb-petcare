@@ -420,5 +420,24 @@ export const api = {
     }
 
     return responseData.data;
+  },
+
+  async getPetsitters() {
+    const response = await fetch(`${API_BASE_URL}/petsitters`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || '펫시터 목록을 불러오는데 실패했습니다.');
+    }
+
+    if (responseData.status !== 'SUCCESS') {
+      throw new Error(responseData.message || '펫시터 목록을 불러오는데 실패했습니다.');
+    }
+
+    return responseData.data;
   }
 }

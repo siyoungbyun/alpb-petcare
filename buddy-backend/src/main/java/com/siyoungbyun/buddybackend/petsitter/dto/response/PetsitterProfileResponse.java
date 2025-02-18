@@ -8,11 +8,15 @@ import lombok.Getter;
 @Getter
 public class PetsitterProfileResponse {
     private Long id;
+    private String name;
+    private String phoneNumber;
     private String description;
 
     static public PetsitterProfileResponse fromEntity(PetsitterProfile petsitterProfile) {
         return PetsitterProfileResponse.builder()
                 .id(petsitterProfile.getId())
+                .name(petsitterProfile.getUser().getName())
+                .phoneNumber(petsitterProfile.getUser().getPhoneNumber())
                 .description(petsitterProfile.getDescription())
                 .build();
     }

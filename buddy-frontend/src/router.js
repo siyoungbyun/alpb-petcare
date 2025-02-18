@@ -94,6 +94,12 @@ const routes = [
     component: () => import('./views/UserBookings.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/petsitters',
+    name: 'PetsitterList',
+    component: () => import('./views/PetsitterList.vue'),
+    meta: { requiresAuth: true }
+  },
   // Catch-all route
   {
     path: '/:pathMatch(.*)*',
